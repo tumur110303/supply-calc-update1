@@ -1,0 +1,24 @@
+{
+  "cli": {
+    "version": "0.54.1"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal"
+    },
+    "production": {}
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "tumur110303@icloud.com",
+        "ascAppId": "6ML3YCU484",
+        "appleTeamId": "1623781887"
+      }
+    }
+  }
+}
