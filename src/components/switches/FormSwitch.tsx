@@ -1,12 +1,13 @@
 import { StyleSheet, Text, View, TextInput } from "react-native";
 import { FC } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Switch, TouchableRipple } from "react-native-paper";
-import { main, w400 } from "../constants";
+import { TouchableRipple } from "react-native-paper";
+import { main, w400 } from "../../constants";
+import Switch from "./Switch";
 
 type Props = {
   icon?: string;
-  onValueChange?: (value: boolean) => void;
+  onValueChange: (value: boolean) => void;
   trueText?: string;
   falseText?: string;
   value?: boolean;
@@ -15,7 +16,7 @@ type Props = {
 
 const FormSwitch: FC<Props> = (props) => {
   return (
-    <View style={{ marginHorizontal: 15 }}>
+    <View style={{ marginHorizontal: 15, marginTop: 5 }}>
       <Text
         style={{
           fontSize: 14,
@@ -55,7 +56,7 @@ const FormSwitch: FC<Props> = (props) => {
               {props.value ? props.trueText : props.falseText}
             </Text>
           </TouchableRipple>
-          <Switch color={main} {...props} />
+          <Switch onValue={props.value as any} onPress={props.onValueChange} />
         </View>
       </View>
     </View>

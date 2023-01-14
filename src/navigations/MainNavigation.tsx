@@ -15,6 +15,7 @@ import TestNavigation from "./TestNavigation";
 import VerificationScreen from "../screens/VerificationScreen";
 import PasswordScreen from "../screens/PasswordScreen";
 import ChangePassword from "../screens/ChangePassword";
+import TheoryCalculatorNavigation from "./TheoryCalculatorNavigation";
 
 export type MainNavigationParams = {
   [name: string]: undefined;
@@ -34,6 +35,13 @@ const MainNavigation = () => {
           <>
             <Drawer.Screen name="Нүүр хуудас" component={HomeScreen} />
 
+            <Drawer.Screen
+              name="Цахилгаан хэлхээний онол"
+              options={{
+                headerShown: false,
+              }}
+              component={TheoryCalculatorNavigation}
+            />
             <Drawer.Screen
               name="Тооцоолол"
               options={{

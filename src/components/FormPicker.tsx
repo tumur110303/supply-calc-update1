@@ -11,9 +11,8 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Picker } from "@react-native-picker/picker";
 
-import { dark, gray, light, main, w400 } from "../constants";
+import { dark, darker, gray, light, main, w400 } from "../constants";
 
 const { width, height } = Dimensions.get("window");
 
@@ -95,19 +94,6 @@ const FormPicker: FC<Props> = ({
             </ScrollView>
           </View>
         </Modal>
-        {/* <Picker
-          style={css.picker}
-          selectedValue={value}
-          onValueChange={onValueChange}
-        >
-          {options.map((option) => (
-            <Picker.Item
-              key={option.value}
-              label={option.label}
-              value={option.value + ""}
-            />
-          ))}
-        </Picker> */}
       </View>
     </TouchableOpacity>
   );
@@ -118,12 +104,13 @@ export default FormPicker;
 const css = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: 10,
   },
   title: {
     textTransform: "uppercase",
     fontFamily: w400,
     marginBottom: 5,
-    color: dark,
+    color: darker,
   },
   wrapper: {
     flexDirection: "row",
@@ -179,5 +166,6 @@ const css = StyleSheet.create({
   },
   modal_text: {
     textAlign: "center",
+    padding: 2,
   },
 });

@@ -1,8 +1,6 @@
 import { FC, useContext, useEffect } from "react";
 import {
-  Alert,
   FlatList,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,

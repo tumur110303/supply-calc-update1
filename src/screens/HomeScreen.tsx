@@ -7,6 +7,7 @@ import {
   Dimensions,
   Linking,
   View,
+  ScrollView,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -34,6 +35,12 @@ const HomeScreen: FC = () => {
   const navigation = useNavigation();
 
   const contents: ContentType[] = [
+    {
+      title: "Цахилгаан хэлхээний онол",
+      navigationName: "Цахилгаан хэлхээний онол",
+      icon: "eye",
+      subtitle: "Цахилгаан хэлхээний онолын тооцоолол",
+    },
     {
       title: "Цахилгаан хангамжийн тооцоо",
       navigationName: "Тооцоолол",
@@ -70,7 +77,7 @@ const HomeScreen: FC = () => {
   }, []);
 
   return (
-    <View style={css.container}>
+    <ScrollView style={css.container}>
       {!subscription && (
         <Text
           style={{
@@ -139,7 +146,7 @@ const HomeScreen: FC = () => {
           Facebook-ээр холбоо барих
         </Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 };
 

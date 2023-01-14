@@ -17,7 +17,6 @@ import { Response } from "../types/prismic";
 import { dark, gray, light, main, w400, w500 } from "../constants";
 import { useNavigation } from "@react-navigation/native";
 import NoSubscription from "./NoSubscription";
-import UserContext from "../context/UserContext";
 import SubscriptionContext from "../context/SubscriptionContext";
 import CountContext from "../context/CountContext";
 

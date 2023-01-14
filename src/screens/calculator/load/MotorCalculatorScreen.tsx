@@ -4,7 +4,7 @@ import CalcContext from "../../../context/CalcContext";
 import Modal from "../../../components/ResultModal";
 import { dark, light, main, w400, w500 } from "../../../constants";
 import Textfield from "../../../components/Textfield";
-import FormSwitch from "../../../components/FormSwitch";
+import FormSwitch from "../../../components/switches/FormSwitch";
 import FormPicker from "../../../components/FormPicker";
 import Button from "../../../components/Button";
 import CountContext from "../../../context/CountContext";
