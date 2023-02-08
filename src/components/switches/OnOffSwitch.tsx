@@ -9,14 +9,14 @@ type Props = {
   label?: string;
 };
 
-const FormSwitch: FC<Props> = (props) => {
+const OnOffSwitch: FC<Props> = (props) => {
   return (
     <View
       style={{
         flex: 1,
         flexDirection: "row",
         marginHorizontal: 10,
-        marginTop: 5,
+        marginTop: 15,
       }}
     >
       <Text
@@ -38,4 +38,4 @@ const FormSwitch: FC<Props> = (props) => {
   );
 };
 
-export default FormSwitch;
+export default OnOffSwitch;

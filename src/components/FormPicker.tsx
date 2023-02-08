@@ -19,8 +19,8 @@ const { width, height } = Dimensions.get("window");
 type Props = {
   icon?: string;
   label?: string;
-  options: { label: string; value: string | number }[];
-  value: string;
+  options: { label: string; value: string | number | boolean }[];
+  value: string | boolean;
   onValueChange?: (value: string) => void;
   style?: StyleProp<ViewStyle>;
 };

@@ -422,14 +422,14 @@ const CospiCalculatorScreen: FC = () => {
                 : "",
             ]}
             onChangeText={(value: any) =>
-              valueChanger(value, [branch, "load"], [1, 2000])
+              valueChanger(value, [branch, "load"], [1, 1000000])
             }
             checkChangeText={(value: any) =>
               valueChanger(value, [branch, "pf"], [0, 1])
             }
             error={{
               text: achaaAldsan
-                ? "Та 1-2000кВт хүртэл утга оруулна уу"
+                ? "Та 1-1000000кВт хүртэл утга оруулна уу"
                 : "Та 0-1 хүртэл утга оруулна уу",
               show: error[branch],
             }}

@@ -45,7 +45,7 @@ const css = StyleSheet.create({
     backgroundColor: main,
     paddingVertical: 12,
     borderRadius: 5,
-    marginTop: 5,
+    marginTop: 15,
   },
   text: {
     textAlign: "center",

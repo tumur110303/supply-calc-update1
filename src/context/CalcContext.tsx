@@ -87,6 +87,287 @@ export const CalcStore: FC = ({ children }) => {
   const moreThanTwelve = [0.9, 0.8, 0.75, 0.6, 0.5, 0.4];
   const lessThanTwelve = [0.8, 0.7, 0.65, 0.5, 0.4, 0.35];
 
+  const ptbCalc: PtbCalc = (capacity: number, transformerNumber: number) => {
+    const powerTableTp = [
+      25, 40, 63, 100, 160, 250, 320, 400, 500, 630, 800, 1000, 1600, 2500,
+      4000, 6300, 10000, 16000, 25000, 40000,
+    ];
+
+    const transformerPower = (arr: number[]) => {
+      if (transformerNumber === 1) {
+        for (let e of arr) {
+          if (e < capacity) continue;
+
+          return e;
+        }
+      } else if (transformerNumber === 2) {
+        const calcCapacity = capacity / 1.4;
+
+        for (let e of arr) {
+          if (e < calcCapacity) continue;
+
+          return e;
+        }
+      }
+    };
+
+    const tpPower = transformerPower(powerTableTp);
+
+    const butsaahUtgaString = `${transformerNumber}x${tpPower} кВА 6(10)/0.4кВ-ын дэд станц`;
+
+    return butsaahUtgaString;
+  };
+
+  // Х.о-ыг string рүү хөрвүүлэх...
+  const sectionCalcThreePhase: SectionCalcThreePhase = (section, cableType) => {
+    if (cableType == "CW") {
+      if (section == 2.5) return "2.5 мм.кв утас";
+      if (section == 4) return "4 мм.кв утас";
+      if (section == 6) return "6 мм.кв утас";
+      if (section == 10) return "10 мм.кв утас";
+      if (section == 16) return "16 мм.кв утас";
+      if (section == 25) return "25 мм.кв утас";
+      if (section == 35) return "35 мм.кв утас";
+      if (section == 50) return "50 мм.кв утас";
+      if (section == 70) return "70 мм.кв утас";
+      if (section == 95) return "95 мм.кв утас";
+      if (section == 120) return "120 мм.кв утас";
+      if (section == 150) return "150 мм.кв утас";
+      if (section == 185) return "185 мм.кв утас";
+      if (section == 240) return "240 мм.кв утас";
+    } else {
+      if (section == 2.5) return "4x2.5 мм.кв";
+      if (section == 4) return "4x4 мм.кв";
+      if (section == 6) return "4x6 мм.кв";
+      if (section == 10) return "4x10 мм.кв";
+      if (section == 16) return "4x16 мм.кв";
+      if (section == 25) return "3x25+1x16 мм.кв";
+      if (section == 35) return "3x35+1x16 мм.кв";
+      if (section == 50) return "3x50+1x25 мм.кв";
+      if (section == 70) return "3x70+1x35 мм.кв";
+      if (section == 95) return "3x95+1x50 мм.кв";
+      if (section == 120) return "3x120+1x70 мм.кв";
+      if (section == 150) return "3x150+1x70 мм.кв";
+      if (section == 185) return "3x185+1x95 мм.кв";
+      if (section == 240) return "3x240+1x120 мм.кв";
+    }
+
+    return "Хүчдэлийн утга болон халалтын нөхцлийн аль нэг шаардлага хангагдахгүй байна! Та өгөгдлөө шалгана уу!";
+  };
+  // Х.о-ыг string рүү хөрвүүлэх...
+  const sectionCalcOnePhase: SectionCalcThreePhase = (section, cableType) => {
+    if (cableType == "CW") {
+      if (section == 2.5) return "2.5 мм.кв утас";
+      if (section == 4) return "4 мм.кв утас";
+      if (section == 6) return "6 мм.кв утас";
+      if (section == 10) return "10 мм.кв утас";
+      if (section == 16) return "16 мм.кв утас";
+      if (section == 25) return "25 мм.кв утас";
+      if (section == 35) return "35 мм.кв утас";
+      if (section == 50) return "50 мм.кв утас";
+      if (section == 70) return "70 мм.кв утас";
+    } else {
+      if (section == 2.5) return "2x2.5 мм.кв";
+      if (section == 4) return "2x4 мм.кв";
+      if (section == 6) return "2x6 мм.кв";
+      if (section == 10) return "2x10 мм.кв";
+      if (section == 16) return "2x16 мм.кв";
+      if (section == 25) return "2x25 мм.кв";
+      if (section == 35) return "2x35 мм.кв";
+      if (section == 50) return "2x50 мм.кв";
+      if (section == 70) return "2x70 мм.кв";
+      if (section == 95) return "2x95 мм.кв";
+      if (section == 120) return "2x120 мм.кв";
+    }
+
+    return "Хүчдэлийн утга болон халалтын нөхцлийн аль нэг шаардлага хангагдахгүй байна! Та өгөгдлөө шалгана уу.";
+  };
+
+  // Гүйдэл, Cosф, бүрэн чадал тодорхойлох функц...
+  const currentCalc: CurrentCalc = (power, load, pfactor, cableType) => {
+    let hurtver = 0;
+    let huwaari = load.reduce((sum, e) => sum + e, 0);
+
+    for (let i = 0; i < load.length; i++) {
+      hurtver = hurtver + load[i] * pfactor[i];
+    }
+    const threeSQ = Math.sqrt(3);
+
+    // Үндсэн параметрүүд...
+    const powerFactor = hurtver / huwaari;
+    const currentHuwaari = threeSQ * 380 * powerFactor;
+    const current = 1000 * (power / currentHuwaari);
+    const burenChadal = power / powerFactor;
+    const { circuitBreakerCurrent, wireCable } = wireCircuitBreakerThreePhase(
+      cableType,
+      current * 1.15
+    );
+
+    return {
+      current,
+      burenChadal,
+      powerFactor,
+      circuitBreakerCurrent,
+      wireCable,
+    };
+  };
+
+  // Сангийн шаардлагын итгэлцүүр тодорхойлох функц...
+  const calcPlumbCoeff: CalcPlumbCoeff = (value) => {
+    let coeff: number = 0;
+    if (value == 3) coeff = 0.9;
+    else if (value == 200) coeff = 0.5;
+    if (value > 3 && value < 200)
+      coeff = interpolation(value, numberTab, coefficientPlumbTab);
+    if (value < 3) coeff = 1;
+    if (value > 200) coeff = 0.5;
+
+    return coeff;
+  };
+  // Интерполяц хийх утга буцаадаг функц...
+  const interpolation: Interpolation = (userValue, key, value) => {
+    if (userValue < key[0] + 1) return value[0];
+    else if (userValue > key[key.length - 1] - 1)
+      return value[value.length - 1];
+    else {
+      const minKeys: number[] = key.filter((e) => {
+        if (userValue > e) return e;
+      });
+
+      const firstKey = minKeys[minKeys.length - 1];
+      const nextKey = key[minKeys.length];
+      const firstValue = value[minKeys.length - 1];
+      const nextValue = value[minKeys.length];
+
+      const difference1 = userValue - nextKey;
+      const difference2 = firstKey - nextKey;
+      const difference3 = userValue - firstKey;
+      const difference4 = nextKey - firstKey;
+
+      const item1 = (difference1 / difference2) * firstValue;
+      const item2 = (difference3 / difference4) * nextValue;
+
+      return item1 + item2;
+    }
+  };
+  // Лифтний шаардлагын итгэлцүүр тодорхойлох функцууд...
+  const elevatorCoeff: ElevatorCoeff = (value, twelveFloor) => {
+    let coeffElevator = 0;
+
+    if (twelveFloor) {
+      if (value == 1) coeffElevator = 1;
+      else if (value < 4) coeffElevator = 0.9;
+      else if (value < 6) coeffElevator = 0.8;
+      else if (value == 6) coeffElevator = 0.75;
+      else if (value > 6 && value < 10) {
+        coeffElevator = interpolation(value, numberElevatorTab, moreThanTwelve);
+      } else if (value == 10) coeffElevator = 0.6;
+      else if (value > 10 && value < 20) {
+        coeffElevator = interpolation(value, numberElevatorTab, moreThanTwelve);
+      } else if (value == 20) coeffElevator = 0.5;
+      else if (value > 20 && value < 26) {
+        coeffElevator = interpolation(value, numberElevatorTab, moreThanTwelve);
+      } else coeffElevator = 0.4;
+    } else {
+      if (value == 1) coeffElevator = 1;
+      else if (value < 4) coeffElevator = 0.8;
+      else if (value < 6) coeffElevator = 0.7;
+      else if (value == 6) coeffElevator = 0.65;
+      else if (value > 6 && value < 10) {
+        coeffElevator = interpolation(value, numberElevatorTab, lessThanTwelve);
+      } else if (value == 10) coeffElevator = 0.5;
+      else if (value > 10 && value < 20) {
+        coeffElevator = interpolation(value, numberElevatorTab, lessThanTwelve);
+      } else if (value == 20) coeffElevator = 0.4;
+      else if (value > 20 && value < 26) {
+        coeffElevator = interpolation(value, numberElevatorTab, lessThanTwelve);
+      } else coeffElevator = 0.35;
+    }
+
+    return coeffElevator;
+  };
+
+  // Дундаж чадлын коэффициент...
+  const equilentPowerFactor: EquilentPowerFactor = (loads, pf) => {
+    const nemegdehuun = loads.map((el, i) => el * pf[i]);
+
+    let sum1 = 0;
+    let sum2 = 0;
+
+    const hurtwer: number = nemegdehuun.reduce((a, b) => a + b);
+    const huwaari: number = loads.reduce((a, b) => a + b);
+
+    const powerFactor = hurtwer / huwaari;
+
+    return powerFactor;
+  };
+
+  // #########################  Засвартай...   #####################
+  // 380B нэг төхөөрөмжийн гүйдэл тодорхойлох функц...
+  const currentOneEquipmentThreePhase: CurrentOneEquipment = (
+    load,
+    pf,
+    cableType,
+    acceptVoltage,
+    length,
+    starConnect
+  ) => {
+    let current = 0;
+    let huwaari = 0;
+    const threeSQ = Math.sqrt(3);
+    starConnect ? (huwaari = threeSQ * 380 * pf) : (huwaari = 380 * pf);
+    current = (load * 1000) / huwaari;
+    const bodsonOgtlol = voltageDropThreePhase(
+      load,
+      acceptVoltage,
+      length,
+      cableType
+    );
+
+    console.log("Эхний дамжуулалт : ", bodsonOgtlol, current, cableType);
+    const { circuitBreakerCurrent, realSection, wireCable } =
+      wireCircuitBreakerThreePhase(cableType, current * 1.15, bodsonOgtlol);
+
+    let c = 0;
+    let hurtver = 0;
+    let huvaari = 0;
+
+    if (cableType == "AC1" || cableType == "AC2") c = 46;
+    else c = 77;
+
+    hurtver = load * length;
+    huvaari = c * realSection;
+
+    let realVoltageDrop =
+      realSection == 0 || !realSection ? 0 : hurtver / huvaari;
+
+    const obj = {
+      current,
+      circuitBreakerCurrent,
+      realVoltageDrop,
+      wireCable,
+    };
+
+    return obj;
+  };
+
+  // 3-н фазын хүчдэлийн алдагдал...
+  const voltageDropThreePhase: VoltageDrop = (
+    load,
+    acceptVoltage,
+    length,
+    cableType
+  ) => {
+    const hurtver = load * length;
+    let huwaari = 0;
+
+    if (cableType == "AC1" || cableType == "AC2") huwaari = 46 * acceptVoltage;
+    else huwaari = 77 * acceptVoltage;
+
+    const BodsonOgtlol = hurtver / huwaari;
+    return BodsonOgtlol;
+  };
+
   // 220B автомат, утасны хөндлөн огтлол буцаах гол функц...
   const wireCircuitBreakerOnePhase: WireCircuitBreakerThreePhase = (
     cableType,
@@ -303,270 +584,6 @@ export const CalcStore: FC = ({ children }) => {
     };
   };
 
-  const ptbCalc: PtbCalc = (capacity: number, transformerNumber: number) => {
-    const powerTableTp = [
-      25, 40, 63, 100, 160, 250, 320, 400, 500, 630, 800, 1000, 1600, 2500,
-      4000, 6300, 10000, 16000, 25000, 40000,
-    ];
-
-    const transformerPower = (arr: number[]) => {
-      if (transformerNumber === 1) {
-        for (let e of arr) {
-          if (e < capacity) continue;
-
-          return e;
-        }
-      } else if (transformerNumber === 2) {
-        const calcCapacity = capacity / 1.4;
-
-        for (let e of arr) {
-          if (e < calcCapacity) continue;
-
-          return e;
-        }
-      }
-    };
-
-    const tpPower = transformerPower(powerTableTp);
-
-    const butsaahUtgaString = `${transformerNumber}x${tpPower} кВА 6(10)/0.4кВ-ын дэд станц`;
-
-    return butsaahUtgaString;
-  };
-
-  // Х.о-ыг string рүү хөрвүүлэх...
-  const sectionCalcThreePhase: SectionCalcThreePhase = (section, cableType) => {
-    if (cableType == "CW") {
-      if (section == 2.5) return "2.5 мм.кв утас";
-      if (section == 4) return "4 мм.кв утас";
-      if (section == 6) return "6 мм.кв утас";
-      if (section == 10) return "10 мм.кв утас";
-      if (section == 16) return "16 мм.кв утас";
-      if (section == 25) return "25 мм.кв утас";
-      if (section == 35) return "35 мм.кв утас";
-      if (section == 50) return "50 мм.кв утас";
-      if (section == 70) return "70 мм.кв утас";
-      if (section == 95) return "95 мм.кв утас";
-      if (section == 120) return "120 мм.кв утас";
-      if (section == 150) return "150 мм.кв утас";
-      if (section == 185) return "185 мм.кв утас";
-      if (section == 240) return "240 мм.кв утас";
-    } else {
-      if (section == 2.5) return "4x2.5 мм.кв";
-      if (section == 4) return "4x4 мм.кв";
-      if (section == 6) return "4x6 мм.кв";
-      if (section == 10) return "4x10 мм.кв";
-      if (section == 16) return "4x16 мм.кв";
-      if (section == 25) return "3x25+1x16 мм.кв";
-      if (section == 35) return "3x35+1x16 мм.кв";
-      if (section == 50) return "3x50+1x25 мм.кв";
-      if (section == 70) return "3x70+1x35 мм.кв";
-      if (section == 95) return "3x95+1x50 мм.кв";
-      if (section == 120) return "3x120+1x70 мм.кв";
-      if (section == 150) return "3x150+1x70 мм.кв";
-      if (section == 185) return "3x185+1x95 мм.кв";
-      if (section == 240) return "3x240+1x120 мм.кв";
-    }
-
-    return "Хүчдэлийн утга болон халалтын нөхцлийн аль нэг шаардлага хангагдахгүй байна! Та өгөгдлөө шалгана уу!";
-  };
-  // Х.о-ыг string рүү хөрвүүлэх...
-  const sectionCalcOnePhase: SectionCalcThreePhase = (section, cableType) => {
-    if (cableType == "CW") {
-      if (section == 2.5) return "2.5 мм.кв утас";
-      if (section == 4) return "4 мм.кв утас";
-      if (section == 6) return "6 мм.кв утас";
-      if (section == 10) return "10 мм.кв утас";
-      if (section == 16) return "16 мм.кв утас";
-      if (section == 25) return "25 мм.кв утас";
-      if (section == 35) return "35 мм.кв утас";
-      if (section == 50) return "50 мм.кв утас";
-      if (section == 70) return "70 мм.кв утас";
-    } else {
-      if (section == 2.5) return "2x2.5 мм.кв";
-      if (section == 4) return "2x4 мм.кв";
-      if (section == 6) return "2x6 мм.кв";
-      if (section == 10) return "2x10 мм.кв";
-      if (section == 16) return "2x16 мм.кв";
-      if (section == 25) return "2x25 мм.кв";
-      if (section == 35) return "2x35 мм.кв";
-      if (section == 50) return "2x50 мм.кв";
-      if (section == 70) return "2x70 мм.кв";
-      if (section == 95) return "2x95 мм.кв";
-      if (section == 120) return "2x120 мм.кв";
-    }
-
-    return "Хүчдэлийн утга болон халалтын нөхцлийн аль нэг шаардлага хангагдахгүй байна! Та өгөгдлөө шалгана уу.";
-  };
-
-  // Гүйдэл, Cosф, бүрэн чадал тодорхойлох функц...
-  const currentCalc: CurrentCalc = (power, load, pfactor, cableType) => {
-    let hurtver = 0;
-    let huwaari = load.reduce((sum, e) => sum + e, 0);
-
-    for (let i = 0; i < load.length; i++) {
-      hurtver = hurtver + load[i] * pfactor[i];
-    }
-    const threeSQ = Math.sqrt(3);
-
-    // Үндсэн параметрүүд...
-    const powerFactor = hurtver / huwaari;
-    const currentHuwaari = threeSQ * 380 * powerFactor;
-    const current = 1000 * (power / currentHuwaari);
-    const burenChadal = power / powerFactor;
-    const { circuitBreakerCurrent, wireCable } = wireCircuitBreakerThreePhase(
-      cableType,
-      current * 1.15
-    );
-
-    return {
-      current,
-      burenChadal,
-      powerFactor,
-      circuitBreakerCurrent,
-      wireCable,
-    };
-  };
-
-  // Сангийн шаардлагын итгэлцүүр тодорхойлох функц...
-  const calcPlumbCoeff: CalcPlumbCoeff = (value) => {
-    let coeff: number = 0;
-    if (value == 3) coeff = 0.9;
-    else if (value == 200) coeff = 0.5;
-    if (value > 3 && value < 200)
-      coeff = interpolation(value, numberTab, coefficientPlumbTab);
-    if (value < 3) coeff = 1;
-    if (value > 200) coeff = 0.5;
-
-    return coeff;
-  };
-  // Интерполяц хийх утга буцаадаг функц...
-  const interpolation: Interpolation = (userValue, key, value) => {
-    if (userValue < key[0] + 1) return value[0];
-    else if (userValue > key[key.length - 1] - 1)
-      return value[value.length - 1];
-    else {
-      const minKeys: number[] = key.filter((e) => {
-        if (userValue > e) return e;
-      });
-
-      const firstKey = minKeys[minKeys.length - 1];
-      const nextKey = key[minKeys.length];
-      const firstValue = value[minKeys.length - 1];
-      const nextValue = value[minKeys.length];
-
-      const difference1 = userValue - nextKey;
-      const difference2 = firstKey - nextKey;
-      const difference3 = userValue - firstKey;
-      const difference4 = nextKey - firstKey;
-
-      const item1 = (difference1 / difference2) * firstValue;
-      const item2 = (difference3 / difference4) * nextValue;
-
-      return item1 + item2;
-    }
-  };
-  // Лифтний шаардлагын итгэлцүүр тодорхойлох функцууд...
-  const elevatorCoeff: ElevatorCoeff = (value, twelveFloor) => {
-    let coeffElevator = 0;
-
-    if (twelveFloor) {
-      if (value == 1) coeffElevator = 1;
-      else if (value < 4) coeffElevator = 0.9;
-      else if (value < 6) coeffElevator = 0.8;
-      else if (value == 6) coeffElevator = 0.75;
-      else if (value > 6 && value < 10) {
-        coeffElevator = interpolation(value, numberElevatorTab, moreThanTwelve);
-      } else if (value == 10) coeffElevator = 0.6;
-      else if (value > 10 && value < 20) {
-        coeffElevator = interpolation(value, numberElevatorTab, moreThanTwelve);
-      } else if (value == 20) coeffElevator = 0.5;
-      else if (value > 20 && value < 26) {
-        coeffElevator = interpolation(value, numberElevatorTab, moreThanTwelve);
-      } else coeffElevator = 0.4;
-    } else {
-      if (value == 1) coeffElevator = 1;
-      else if (value < 4) coeffElevator = 0.8;
-      else if (value < 6) coeffElevator = 0.7;
-      else if (value == 6) coeffElevator = 0.65;
-      else if (value > 6 && value < 10) {
-        coeffElevator = interpolation(value, numberElevatorTab, lessThanTwelve);
-      } else if (value == 10) coeffElevator = 0.5;
-      else if (value > 10 && value < 20) {
-        coeffElevator = interpolation(value, numberElevatorTab, lessThanTwelve);
-      } else if (value == 20) coeffElevator = 0.4;
-      else if (value > 20 && value < 26) {
-        coeffElevator = interpolation(value, numberElevatorTab, lessThanTwelve);
-      } else coeffElevator = 0.35;
-    }
-
-    return coeffElevator;
-  };
-
-  // 380B нэг төхөөрөмжийн гүйдэл тодорхойлох функц...
-  const currentOneEquipmentThreePhase: CurrentOneEquipment = (
-    load,
-    pf,
-    cableType,
-    acceptVoltage,
-    length,
-    starConnect
-  ) => {
-    let current = 0;
-    let huwaari = 0;
-    const threeSQ = Math.sqrt(3);
-    starConnect ? (huwaari = threeSQ * 380 * pf) : (huwaari = 380 * pf);
-    current = (load * 1000) / huwaari;
-    const bodsonOgtlol = voltageDropThreePhase(
-      load,
-      acceptVoltage,
-      length,
-      cableType
-    );
-
-    console.log("Эхний дамжуулалт : ", bodsonOgtlol, current, cableType);
-    const { circuitBreakerCurrent, realSection, wireCable } =
-      wireCircuitBreakerThreePhase(cableType, current * 1.15, bodsonOgtlol);
-
-    let c = 0;
-    let hurtver = 0;
-    let huvaari = 0;
-
-    if (cableType == "AC1" || cableType == "AC2") c = 46;
-    else c = 77;
-
-    hurtver = load * length;
-    huvaari = c * realSection;
-
-    let realVoltageDrop =
-      realSection == 0 || !realSection ? 0 : hurtver / huvaari;
-
-    const obj = {
-      current,
-      circuitBreakerCurrent,
-      realVoltageDrop,
-      wireCable,
-    };
-
-    return obj;
-  };
-
-  const voltageDropThreePhase: VoltageDrop = (
-    load,
-    acceptVoltage,
-    length,
-    cableType
-  ) => {
-    const hurtver = load * length;
-    let huwaari = 0;
-
-    if (cableType == "AC1" || cableType == "AC2") huwaari = 46 * acceptVoltage;
-    else huwaari = 77 * acceptVoltage;
-
-    const BodsonOgtlol = hurtver / huwaari;
-    return BodsonOgtlol;
-  };
-
   // 220B нэг төхөөрөмжийн гүйдэл тодорхойлох функц...
   const currentOneEquipmentOnePhase: CurrentOneEquipment = (
     load,
@@ -626,21 +643,6 @@ export const CalcStore: FC = ({ children }) => {
 
     const BodsonOgtlol = hurtver / huwaari;
     return BodsonOgtlol;
-  };
-
-  // Дундаж чадлын коэффициент...
-  const equilentPowerFactor: EquilentPowerFactor = (loads, pf) => {
-    const nemegdehuun = loads.map((el, i) => el * pf[i]);
-
-    let sum1 = 0;
-    let sum2 = 0;
-
-    const hurtwer: number = nemegdehuun.reduce((a, b) => a + b);
-    const huwaari: number = loads.reduce((a, b) => a + b);
-
-    const powerFactor = hurtwer / huwaari;
-
-    return powerFactor;
   };
 
   return (

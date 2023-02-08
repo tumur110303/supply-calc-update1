@@ -20,7 +20,9 @@ type Props = {
 
 const Switch: FC<Props> = ({ style, onValue, onPress }) => {
   return (
-    <View style={{ width: 48, marginHorizontal: 5 }}>
+    <View
+      style={{ width: 48, marginHorizontal: 5, position: "absolute", right: 0 }}
+    >
       <TouchableOpacity
         style={{
           flex: 1,

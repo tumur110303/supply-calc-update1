@@ -1,8 +1,8 @@
-import { createStackNavigator } from "@react-navigation/stack";
+import { createStackNavigator, Header } from "@react-navigation/stack";
 import useMainHeader from "../hooks/useMainHeader";
 
 import CalculatorScreen from "../screens/calculator/load/CalculatorsScreen";
-import ApartmentCalculator from "../screens/calculator/load/Apartment/ApartmentCalculator";
+import ApartmentCalculatorNavigation from "./ApartmentCalculatorNavigation";
 // import OfficeCalculatorScreen from "../screens/calculator/load/OfficeCalculatorScreen";
 // import MotorCalculatorScreen from "../screens/calculator/load/MotorCalculatorScreen";
 // import OneEquipmentCalculatorScreen from "../screens/calculator/load/OneEquipmentCalculatorScreen";
@@ -27,7 +27,11 @@ const CalculatorNavigation = () => {
       initialRouteName="Тооцооны програм"
     >
       <Stack.Screen name="Тооцооны програм" component={CalculatorScreen} />
-      <Stack.Screen name="Орон сууц" component={ApartmentCalculator} />
+      <Stack.Screen
+        name="Орон сууц"
+        options={{ headerShown: false }}
+        component={ApartmentCalculatorNavigation}
+      />
       {/* <Stack.Screen
         name="Олон нийтийн барилга"
         component={OfficeCalculatorScreen}

@@ -1,18 +1,24 @@
 import { FC, useContext, useEffect } from "react";
 import {
-  FlatList,
+  Image,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { dark, light, main, w400, blue, green } from "../../../../constants";
 import { useNavigation } from "@react-navigation/native";
 import NoSubscription from "../../../NoSubscription";
 import SubscriptionContext from "../../../../context/SubscriptionContext";
 import CountContext from "../../../../context/CountContext";
 // Импорт icons
+import Icon1 from "../../../../../assets/apartment-icons/01.png";
+import Icon2 from "../../../../../assets/apartment-icons/02.png";
+import Icon3 from "../../../../../assets/apartment-icons/03.png";
+import Icon46 from "../../../../../assets/apartment-icons/0406.png";
+import Icon5 from "../../../../../assets/apartment-icons/05.png";
+import Icon7 from "../../../../../assets/apartment-icons/07.png";
 
 type ContentType = {
   title: string;
@@ -29,52 +35,78 @@ const ApartmentCalculatorScreen: FC = () => {
       {
         title: "Барилгын оролтын тооцоог хийж гүйцэтгэх",
         navigationName: "Барилгын оролт",
-        icon: "home-city-outline",
+        icon: Icon1,
       },
       {
         title: "Сууцны тоолуурын самбар тэжээх шугамын тооцоо",
         navigationName: "Тоолуурын самбар",
-        icon: "home-city-outline",
+        icon: Icon2,
       },
     ],
     [
       {
         title: "Гэрэлтүүлгийн самбар тэжээх шугамын тооцоо",
         navigationName: "Гэрэлтүүлгийн самбар",
-        icon: "home-city-outline",
+        icon: Icon3,
       },
       {
         title:
           "Сантехникийн тоног төхөөрөмжүүдийн самбар тэжээх шугамын тооцоо",
         navigationName: "Сантехникийн тоног төхөөрөмжүүд",
-        icon: "home-city-outline",
+        icon: Icon46,
       },
     ],
     [
       {
         title: "Дундаж чадлын коэффициент тодорхойлох",
         navigationName: "Дундаж чадлын коэффициент",
-        icon: "home-city-outline",
+        icon: Icon5,
       },
       {
         title: "Нэг асинхрон хөдөлгүүр тэжээх шугамын тооцоо",
         navigationName: "Асинхрон хөдөлгүүр",
-        icon: "home-city-outline",
+        icon: Icon46,
+      },
+    ],
+    [
+      {
+        title: "Лифт тэжээх шугамын тооцоо",
+        navigationName: "Лифт",
+        icon: Icon7,
+      },
+      {
+        title: "Магистраль шугамын хүчдэлийн алдагдал",
+        navigationName: "Хүчдэлийн алдагдал",
+        icon: Icon1,
       },
     ],
   ];
 
   return (
-    <View style={css.container}>
+    <ScrollView style={css.container}>
       {contents.map((el, i) => {
         return (
-          <View key={i}>
-            <TouchableOpacity>
-              <Text>{el[0].title}</Text>
+          <View key={i} style={css.components}>
+            <TouchableOpacity
+              activeOpacity={0.6}
+              onPress={() => navigation.navigate(el[0].navigationName as any)}
+              style={css.touchable}
+            >
+              <Image style={{ width: 60, height: 60 }} source={el[0].icon} />
+              <Text style={{ textAlign: "center" }}>{el[0].title}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              activeOpacity={0.6}
+              onPress={() => navigation.navigate(el[1].navigationName as any)}
+              style={css.touchable}
+            >
+              <Image style={{ width: 60, height: 60 }} source={el[1].icon} />
+              <Text style={{ textAlign: "center" }}>{el[1].title}</Text>
             </TouchableOpacity>
           </View>
         );
       })}
+
       {(() => {
         if (!subscription && count > 4) {
           return (
@@ -91,7 +123,7 @@ const ApartmentCalculatorScreen: FC = () => {
           );
         } else null;
       })()}
-    </View>
+    </ScrollView>
   );
 };
 
@@ -101,6 +133,24 @@ const css = StyleSheet.create({
   container: {
     paddingVertical: 10,
     paddingHorizontal: 10,
+  },
+  components: {
+    marginBottom: 10,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+  },
+  touchable: {
+    margin: 5,
+    width: "40%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: blue,
+    borderRadius: 20,
+    height: 150,
   },
   line: {
     height: "100%",
