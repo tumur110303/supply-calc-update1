@@ -31,7 +31,7 @@ type Value = {
     quantity?: number;
     load?: string;
   };
-  cable: "AC" | "CC";
+  cable: "AC" | "CC" | "AW" | "CW";
 };
 type Error = {
   floor?: boolean;
@@ -72,8 +72,10 @@ const ApartmentInput: FC = () => {
     { label: "12-с дээш давхар барилга", value: true },
   ];
   const cables = [
-    { label: "Хөнгөнцагаан", value: "AC" },
-    { label: "Зэс", value: "CC" },
+    { label: "Хөнгөнцагаан кабель", value: "AC" },
+    { label: "Хөнгөнцагаан утас", value: "AW" },
+    { label: "Зэс кабель", value: "CC" },
+    { label: "Зэс утас", value: "CW" },
   ];
   const [error, setError] = useState<Error>({
     floor: false,
