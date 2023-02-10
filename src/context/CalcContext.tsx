@@ -1,6 +1,7 @@
 import { FC, createContext } from "react";
 
 const CalcContext = createContext<{
+  conductor: Conductor;
   calcPlumbCoeff: CalcPlumbCoeff;
   elevatorCoeff: ElevatorCoeff;
   interpolation: Interpolation;
@@ -212,6 +213,11 @@ export const CalcStore: FC = ({ children }) => {
     earthType,
     onePhase
   ) => {
+    const objArr: {}[] = [
+      ...giveConductorArr(conductorType, earthType, onePhase),
+    ];
+
+    // const selectedConductor = getLargeValue(circuitBreakerCurrent, table)
     return "3х2.5мм.кв";
   };
 
@@ -225,6 +231,7 @@ export const CalcStore: FC = ({ children }) => {
       largeValue = e;
       break;
     }
+
     return largeValue;
   };
 
@@ -823,12 +830,14 @@ export const CalcStore: FC = ({ children }) => {
       if (conductorType === "CW") conductorArr = [...copperWire380];
     }
 
+    console.log("Төрлөөс : ", conductorArr);
     return conductorArr;
   };
 
   return (
     <CalcContext.Provider
       value={{
+        conductor,
         calcPlumbCoeff,
         elevatorCoeff,
         interpolation,
