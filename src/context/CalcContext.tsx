@@ -1,25 +1,35 @@
 import { FC, createContext } from "react";
 
 const CalcContext = createContext<{
+  currentThreePhase: CurrentThreePhase;
+  voltageDrop: VoltageDrop;
+  circuitBreaker: CircuitBreaker;
+  apartmentCalc: ApartmentCalc;
   conductor: Conductor;
-  calcPlumbCoeff: CalcPlumbCoeff;
-  elevatorCoeff: ElevatorCoeff;
+  calcPlumb: CalcPlumb;
+  elevatorCalc: ElevatorCalc;
   interpolation: Interpolation;
   ptbCalc: PtbCalc;
+  currentOnePhase: CurrentOnePhase;
   equilentPowerFactor: EquilentPowerFactor;
+  classifyPlumbLoad: ClassifyPlumbLoad;
 } | null>(null);
 
 type EquilentPowerFactor = (loads: number[], pfs: number[]) => number;
 
 type PtbCalc = (capacity: number, transformerNumber: number) => string;
 
-type CalcPlumbCoeff = (value: number) => number;
+type CalcPlumb = (value: number, load: number) => number;
 type Interpolation = (
   userValue: number,
   key: number[],
   value: number[]
 ) => number;
-type ElevatorCoeff = (value: number, twelveFloor: boolean) => number;
+type ElevatorCalc = (
+  value: number,
+  load: number,
+  twelveFloor: boolean
+) => number;
 
 // ЗАССАН TYPES...
 type CurrentOnePhase = (
@@ -27,24 +37,53 @@ type CurrentOnePhase = (
   powerFactor: number,
   mainUnit?: boolean
 ) => number;
-type CircuitBreaker = (current: number) => number;
+type CircuitBreaker = (current: number) => number | string;
 type Conductor = (
   circuitBreakerCurrent: number,
   conductorType: "CC" | "CW" | "AC" | "AW",
   earthType: "TT" | "TN-S",
   onePhase?: boolean
 ) => string | object;
-type GetLargeValue = (value: number, arr: number[]) => number;
-type GiveConductorArr = (
-  conductorType: "CC" | "CW" | "AC" | "AW",
-  earthType: "TT" | "TN-S",
+type GetLargeValue = (value: number, arr: number[]) => number | string;
+type ApartmentCalc = (numberApartment: number) => number;
+type ClassifyPlumbLoad = (loads: number[]) => object;
+type CurrentThreePhase = (
+  load: number,
+  powerFactor: number,
+  delta?: number,
+  mainUnit?: boolean
+) => number;
+type VoltageDrop = (
+  load: number,
+  length: number,
+  section: number,
+  material: "CC" | "CW" | "AC" | "AW",
   onePhase?: boolean
-) => {}[];
+) => number;
+type GiveC = (
+  conductorMaterial: "CC" | "CW" | "AC" | "AW",
+  onePhase?: boolean
+) => number;
+type SectionFromDrop = (
+  load: number,
+  length: number,
+  allowDrop: number,
+  material: "CC" | "CW" | "AC" | "AW",
+  onePhase?: boolean
+) => number | string;
 
 // ########################## ҮНДСЭН ФУНКЦ ################################
 export const CalcStore: FC = ({ children }) => {
+  // Сууцны ачаалал тодорхойлоход шаардлагатай өгөгдлүүд...
+  const numberTabAppartment = [
+    3, 4, 5, 6, 9, 12, 15, 18, 24, 40, 60, 100, 200, 400, 600, 1000,
+  ];
+  const privLoadTab = [
+    10, 7.5, 6, 5.1, 3.8, 3.2, 2.8, 2.6, 2.2, 1.95, 1.7, 1.5, 1.36, 1.27, 1.23,
+    1.19,
+  ];
   // Сантехникийн шаардлагын итгэлцүүр тодорхойлоход шаардлагатай өгөгдлүүд...
-  const numberTab = [2, 3, 5, 8, 10, 15, 20, 30, 50, 100, 200];
+  const numberTabPlumb = [2, 3, 5, 8, 10, 15, 20, 30, 50, 100, 200];
   const coefficientPlumbTab = [
     1, 0.9, 0.8, 0.75, 0.7, 0.65, 0.65, 0.6, 0.55, 0.55, 0.5,
   ];
@@ -53,8 +92,9 @@ export const CalcStore: FC = ({ children }) => {
   const moreThanTwelve = [0.9, 0.8, 0.75, 0.6, 0.5, 0.4];
   const lessThanTwelve = [0.8, 0.7, 0.65, 0.5, 0.4, 0.35];
 
+  // ##########################  ТООЦООНЫ ФУНКЦУУД ... ###############################
   // Дэд станц сонгох...
-  const ptbCalc: PtbCalc = (capacity: number, transformerNumber: number) => {
+  const ptbCalc = (capacity: number, transformerNumber: number) => {
     const powerTableTp = [
       25, 40, 63, 100, 160, 250, 320, 400, 500, 630, 800, 1000, 1600, 2500,
       4000, 6300, 10000, 16000, 25000, 40000,
@@ -85,81 +125,100 @@ export const CalcStore: FC = ({ children }) => {
     return butsaahUtgaString;
   };
 
-  // Интерполяц хийх утга буцаадаг функц...
-  const interpolation: Interpolation = (userValue, key, value) => {
-    if (userValue < key[0] + 1) return value[0];
-    else if (userValue > key[key.length - 1] - 1)
-      return value[value.length - 1];
-    else {
-      const minKeys: number[] = key.filter((e) => {
-        if (userValue > e) return e;
-      });
-
-      const firstKey = minKeys[minKeys.length - 1];
-      const nextKey = key[minKeys.length];
-      const firstValue = value[minKeys.length - 1];
-      const nextValue = value[minKeys.length];
-
-      const difference1 = userValue - nextKey;
-      const difference2 = firstKey - nextKey;
-      const difference3 = userValue - firstKey;
-      const difference4 = nextKey - firstKey;
-
-      const item1 = (difference1 / difference2) * firstValue;
-      const item2 = (difference3 / difference4) * nextValue;
-
-      return item1 + item2;
-    }
+  // Сууцны ачаалал тодорхойлох функц ...
+  const apartmentCalc = (numberApartment: number) => {
+    const privLoad = interpolation(
+      numberApartment,
+      numberTabAppartment,
+      privLoadTab
+    );
+    const apartmentLoad = numberApartment * privLoad;
+    return apartmentLoad;
   };
 
-  // Сангийн шаардлагын итгэлцүүр тодорхойлох функц...
-  const calcPlumbCoeff: CalcPlumbCoeff = (value) => {
+  // Сангийн ачаалал тодорхойлох функц...
+  const calcPlumb = (numberEquipment: number, totalLoad: number) => {
     let coeff: number = 0;
-    if (value == 3) coeff = 0.9;
-    else if (value == 200) coeff = 0.5;
-    if (value > 3 && value < 200)
-      coeff = interpolation(value, numberTab, coefficientPlumbTab);
-    if (value < 3) coeff = 1;
-    if (value > 200) coeff = 0.5;
+    if (numberEquipment == 3) coeff = 0.9;
+    else if (numberEquipment == 200) coeff = 0.5;
+    if (numberEquipment > 3 && numberEquipment < 200)
+      coeff = interpolation(
+        numberEquipment,
+        numberTabPlumb,
+        coefficientPlumbTab
+      );
+    if (numberEquipment < 3) coeff = 1;
+    if (numberEquipment > 200) coeff = 0.5;
 
-    return coeff;
+    const plumbLoad = totalLoad * coeff;
+
+    return plumbLoad;
   };
 
-  // Лифтний шаардлагын итгэлцүүр тодорхойлох функцууд...
-  const elevatorCoeff: ElevatorCoeff = (value, twelveFloor) => {
+  // Лифтний ачаалал тодорхойлох функцууд...
+  const elevatorCalc = (
+    numberEquipment: number,
+    totalLoad: number,
+    moreThanFloor: boolean
+  ) => {
     let coeffElevator = 0;
 
-    if (twelveFloor) {
-      if (value == 1) coeffElevator = 1;
-      else if (value < 4) coeffElevator = 0.9;
-      else if (value < 6) coeffElevator = 0.8;
-      else if (value == 6) coeffElevator = 0.75;
-      else if (value > 6 && value < 10) {
-        coeffElevator = interpolation(value, numberElevatorTab, moreThanTwelve);
-      } else if (value == 10) coeffElevator = 0.6;
-      else if (value > 10 && value < 20) {
-        coeffElevator = interpolation(value, numberElevatorTab, moreThanTwelve);
-      } else if (value == 20) coeffElevator = 0.5;
-      else if (value > 20 && value < 26) {
-        coeffElevator = interpolation(value, numberElevatorTab, moreThanTwelve);
+    if (moreThanFloor) {
+      if (numberEquipment == 1) coeffElevator = 1;
+      else if (numberEquipment < 4) coeffElevator = 0.9;
+      else if (numberEquipment < 6) coeffElevator = 0.8;
+      else if (numberEquipment == 6) coeffElevator = 0.75;
+      else if (numberEquipment > 6 && numberEquipment < 10) {
+        coeffElevator = interpolation(
+          numberEquipment,
+          numberElevatorTab,
+          moreThanTwelve
+        );
+      } else if (numberEquipment == 10) coeffElevator = 0.6;
+      else if (numberEquipment > 10 && numberEquipment < 20) {
+        coeffElevator = interpolation(
+          numberEquipment,
+          numberElevatorTab,
+          moreThanTwelve
+        );
+      } else if (numberEquipment == 20) coeffElevator = 0.5;
+      else if (numberEquipment > 20 && numberEquipment < 26) {
+        coeffElevator = interpolation(
+          numberEquipment,
+          numberElevatorTab,
+          moreThanTwelve
+        );
       } else coeffElevator = 0.4;
     } else {
-      if (value == 1) coeffElevator = 1;
-      else if (value < 4) coeffElevator = 0.8;
-      else if (value < 6) coeffElevator = 0.7;
-      else if (value == 6) coeffElevator = 0.65;
-      else if (value > 6 && value < 10) {
-        coeffElevator = interpolation(value, numberElevatorTab, lessThanTwelve);
-      } else if (value == 10) coeffElevator = 0.5;
-      else if (value > 10 && value < 20) {
-        coeffElevator = interpolation(value, numberElevatorTab, lessThanTwelve);
-      } else if (value == 20) coeffElevator = 0.4;
-      else if (value > 20 && value < 26) {
-        coeffElevator = interpolation(value, numberElevatorTab, lessThanTwelve);
+      if (numberEquipment == 1) coeffElevator = 1;
+      else if (numberEquipment < 4) coeffElevator = 0.8;
+      else if (numberEquipment < 6) coeffElevator = 0.7;
+      else if (numberEquipment == 6) coeffElevator = 0.65;
+      else if (numberEquipment > 6 && numberEquipment < 10) {
+        coeffElevator = interpolation(
+          numberEquipment,
+          numberElevatorTab,
+          lessThanTwelve
+        );
+      } else if (numberEquipment == 10) coeffElevator = 0.5;
+      else if (numberEquipment > 10 && numberEquipment < 20) {
+        coeffElevator = interpolation(
+          numberEquipment,
+          numberElevatorTab,
+          lessThanTwelve
+        );
+      } else if (numberEquipment == 20) coeffElevator = 0.4;
+      else if (numberEquipment > 20 && numberEquipment < 26) {
+        coeffElevator = interpolation(
+          numberEquipment,
+          numberElevatorTab,
+          lessThanTwelve
+        );
       } else coeffElevator = 0.35;
     }
 
-    return coeffElevator;
+    const elevatorLoad = totalLoad * coeffElevator;
+    return elevatorLoad;
   };
 
   // Дундаж чадлын коэффициент...
@@ -194,6 +253,74 @@ export const CalcStore: FC = ({ children }) => {
     return current;
   };
 
+  // Гүйдэл тооцох 380B ...
+  const currentThreePhase: CurrentThreePhase = (
+    load,
+    powerFactor,
+    delta,
+    mainUnit
+  ) => {
+    let huwaari = 0;
+    let current = 0;
+    const threeSquart = Math.sqrt(3);
+
+    if (mainUnit) {
+      if (delta) {
+        huwaari = 380 * powerFactor;
+        current = load / huwaari;
+      } else {
+        huwaari = 380 * powerFactor * threeSquart;
+        current = load / huwaari;
+      }
+    } else {
+      if (delta) {
+        huwaari = 380 * powerFactor;
+        current = (1000 * load) / huwaari;
+      } else {
+        huwaari = 380 * powerFactor * threeSquart;
+        current = (1000 * load) / huwaari;
+      }
+    }
+    return current;
+  };
+
+  // Хүчдэлийн алдагдал тооцох 380В...
+  const voltageDrop: VoltageDrop = (
+    load,
+    length,
+    section,
+    material,
+    onePhase
+  ) => {
+    const c = giveC(material, onePhase);
+    const hurtwer = load * length;
+    const huwaari = c * section;
+    const drop = hurtwer / huwaari;
+
+    return drop;
+  };
+
+  // Хүчдэлийн алдагдлаар хөндлөн огтлол сонгох...
+  const sectionFromDrop: SectionFromDrop = (
+    load,
+    length,
+    allowDrop,
+    material,
+    onePhase
+  ) => {
+    const arrConductor = [
+      2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240,
+    ];
+    const c = giveC(material, onePhase);
+    const hurtwer = load * length;
+    const huwaari = c * allowDrop;
+    const real = hurtwer / huwaari;
+
+    const sectionDrop = getLargeValue(real, arrConductor);
+
+    return sectionDrop;
+  };
+
   // Автомат сонгох 220/380В ...
   const circuitBreaker: CircuitBreaker = (current) => {
     const circBreaker = [
@@ -206,7 +333,7 @@ export const CalcStore: FC = ({ children }) => {
     return circuitBreakerCurrent;
   };
 
-  // Халалтын нөхцлөөр хөндлөн огтлол сонгох 220В
+  // Халалтын нөхцлөөр хөндлөн огтлол сонгох...
   const conductor: Conductor = (
     circuitBreakerCurrent,
     conductorType,
@@ -829,6 +956,15 @@ export const CalcStore: FC = ({ children }) => {
       : "Нэг хэлхээгээр дамжуулахад ачаалал харьцангуй их байгаа тул, ачааллыг хоёр хувааж дамжуулахаар төлөвлөх нь илүү тохиромжтой!";
   };
 
+  // Сантехникийн ачааг cosф-д тааруулж ангилах функц...
+  const classifyPlumbLoad: ClassifyPlumbLoad = (loads: number[]) => {
+    const lessOne = loads.filter((el) => el < 1);
+    const oneToFour = loads.filter((el) => el >= 1 && el <= 4);
+    const moreThanFour = loads.filter((el) => el > 4);
+
+    return { lessOne, oneToFour, moreThanFour };
+  };
+
   // ########################### ТУСЛАХ ФУНКЦУУД  ################################
   // ТАБЛИЦААС ИХЭСГЭЖ АВАХ ФУНКЦ ...
   const getLargeValue: GetLargeValue = (value, arr) => {
@@ -840,18 +976,67 @@ export const CalcStore: FC = ({ children }) => {
       break;
     }
 
-    return largeValue;
+    return largeValue !== 0
+      ? largeValue
+      : "Хэт урт шугам, эсвэл хэт их ачаалалтайгаас хамаараад шаардлага хангах утгыг сонгох боломжгүй...";
+  };
+
+  // Интерполяц хийх утга буцаадаг функц...
+  const interpolation: Interpolation = (userValue, key, value) => {
+    if (userValue < key[0] + 1) return value[0];
+    else if (userValue > key[key.length - 1] - 1)
+      return value[value.length - 1];
+    else {
+      const minKeys: number[] = key.filter((e) => {
+        if (userValue > e) return e;
+      });
+
+      const firstKey = minKeys[minKeys.length - 1];
+      const nextKey = key[minKeys.length];
+      const firstValue = value[minKeys.length - 1];
+      const nextValue = value[minKeys.length];
+
+      const difference1 = userValue - nextKey;
+      const difference2 = firstKey - nextKey;
+      const difference3 = userValue - firstKey;
+      const difference4 = nextKey - firstKey;
+
+      const item1 = (difference1 / difference2) * firstValue;
+      const item2 = (difference3 / difference4) * nextValue;
+
+      return item1 + item2;
+    }
+  };
+
+  // "C" коэффициент өгөх функц ...
+  const giveC: GiveC = (material, onePhase) => {
+    let c = 77;
+    if (onePhase) {
+      if (material === "AC" || material === "AW") c = 7.7;
+      else if (material === "CC" || material === "CW") c = 12.8;
+    } else {
+      if (material === "AC" || material === "AW") c = 46;
+      else c = 77;
+    }
+
+    return c;
   };
 
   return (
     <CalcContext.Provider
       value={{
+        currentThreePhase,
+        voltageDrop,
+        circuitBreaker,
+        apartmentCalc,
         conductor,
-        calcPlumbCoeff,
-        elevatorCoeff,
+        calcPlumb,
+        elevatorCalc,
         interpolation,
         ptbCalc,
+        currentOnePhase,
         equilentPowerFactor,
+        classifyPlumbLoad,
       }}
     >
       {children}

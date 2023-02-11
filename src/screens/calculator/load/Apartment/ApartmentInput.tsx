@@ -352,10 +352,10 @@ const ApartmentInput: FC = () => {
   };
 
   const calc = async () => {
-    console.log("zugeer l calc...");
-    // calcContext
-    //   ? calcContext?.conductor(47, "AC", "TT")
-    //   : "calcContext алгаа...";
+    // console.log("zugeer l calc...");
+    calcContext
+      ? calcContext?.conductor(39, "CW", "TT", true)
+      : "calcContext алгаа...";
 
     await increase();
   };
