@@ -9,8 +9,10 @@ import { dark, light, main, w400, w500 } from "../../../../constants";
 import Modal from "../../../../components/ResultModal";
 import CountContext from "../../../../context/CountContext";
 import OnOffSwitch from "../../../../components/switches/OnOffSwitch";
+import FormSwitch from "../../../../components/switches/FormSwitch";
 
 type Value = {
+  earthSystem?: boolean;
   floor: boolean;
   people?: number;
   lighting?: string;
@@ -34,6 +36,7 @@ type Value = {
   cable: "AC" | "CC" | "AW" | "CW";
 };
 type Error = {
+  earthSystem?: boolean;
   floor?: boolean;
   people?: boolean;
   lighting?: boolean;
@@ -57,6 +60,7 @@ const ApartmentInput: FC = () => {
   const calcContext = useContext(CalcContext);
 
   const [value, setValue] = useState<Value>({
+    earthSystem: false,
     floor: false,
     cable: "AC",
   });
@@ -122,14 +126,6 @@ const ApartmentInput: FC = () => {
     // Disabled variable оноох...
     setDisabled(disabled);
   }, [value, error]);
-
-  const numberTab = [
-    3, 4, 5, 6, 9, 12, 15, 18, 24, 40, 60, 100, 200, 400, 600, 1000,
-  ];
-  const privLoadTab = [
-    10, 7.5, 6, 5.1, 3.8, 3.2, 2.8, 2.6, 2.2, 1.95, 1.7, 1.5, 1.36, 1.27, 1.23,
-    1.19,
-  ];
 
   const reset = () => {
     setValue({
@@ -352,10 +348,90 @@ const ApartmentInput: FC = () => {
   };
 
   const calc = async () => {
-    // console.log("zugeer l calc...");
-    calcContext
-      ? calcContext?.conductor(39, "CW", "TT", true)
-      : "calcContext алгаа...";
+    if (calcContext) {
+      const quantityHouse = value.people ? value.people : 0;
+      const pumpLoad =
+        value.pump && value.pump.load ? parseFloat(value.pump.load) : 0;
+      const fanLoad =
+        value.fan && value.fan.load ? parseFloat(value.fan.load) : 0;
+      const heaterLoad =
+        value.heater && value.heater.load ? parseFloat(value.heater.load) : 0;
+      const elevatorLoad =
+        value.lift && value.lift.load ? parseFloat(value.lift.load) : 0;
+      const lightLoad =
+        !value.lighting || parseFloat(value.lighting) < 10
+          ? 0
+          : parseFloat(value.lighting) - 10;
+      const fireLoad = value.firePump ? parseFloat(value.firePump) : 0;
+
+      const quantityHeater =
+        value.heater && value.heater.quantity ? value.heater.quantity : 0;
+      const quantityFan =
+        value.fan && value.fan.quantity ? value.fan.quantity : 0;
+      const quantityPump =
+        value.pump && value.pump.quantity ? value.pump.quantity : 0;
+      const quantityElevator =
+        value.lift && value.lift.quantity ? value.lift.quantity : 0;
+
+      const housingLoad = calcContext.apartmentCalc(quantityHouse);
+      const plumbLoad = calcContext.calcPlumb(
+        quantityHeater + quantityFan + quantityPump,
+        heaterLoad + fanLoad + pumpLoad
+      );
+      const elevatorLoadCalc = calcContext.elevatorCalc(
+        quantityElevator,
+        elevatorLoad,
+        value.floor
+      );
+
+      // Тооцооны ачаалал...
+      const power =
+        housingLoad + lightLoad + 0.9 * (plumbLoad + elevatorLoadCalc);
+
+      // Тооцооны гүйдэл ба cosф...
+      const toPowerPlumb = calcContext.calcPlumb(
+        quantityFan + quantityPump,
+        fanLoad + pumpLoad
+      );
+      const toPowerHeater = calcContext.calcPlumb(quantityHeater, heaterLoad);
+      const loadsToPowerfactor = [
+        housingLoad,
+        toPowerPlumb,
+        toPowerHeater,
+        elevatorLoadCalc,
+        lightLoad,
+      ];
+
+      const powerFactor = calcContext.equilentPowerFactor(
+        loadsToPowerfactor,
+        [0.98, 0.8, 0.98, 0.65, 0.92]
+      );
+
+      const threeSquart = Math.sqrt(3);
+      const huwaari =
+        typeof powerFactor === "number"
+          ? threeSquart * 380 * powerFactor
+          : 0.98;
+      const huwaariFire = threeSquart * 380 * 0.8;
+
+      // Тооцооны гүйдэл...
+      const current = power / huwaari;
+      const currentFire = fireLoad / huwaariFire;
+
+      const circuitBreaker = calcContext.circuitBreaker(current);
+      const circuitBreakerFire = calcContext.circuitBreaker(currentFire);
+
+      const section = calcContext.conductor(
+        typeof circuitBreaker === "number" ? circuitBreaker : 1600,
+        value.cable ? value.cable : "AC",
+        value.earthSystem
+      );
+      const sectionFire = calcContext.conductor(
+        typeof circuitBreakerFire === "number" ? circuitBreakerFire : 1600,
+        value.cable ? value.cable : "AC",
+        value.earthSystem
+      );
+    }
 
     await increase();
   };
@@ -607,7 +683,6 @@ const ApartmentInput: FC = () => {
           show: error.lighting,
         }}
       />
-
       <FormPicker
         label="Утас, кабель"
         icon="google-circles-communities"
@@ -621,7 +696,6 @@ const ApartmentInput: FC = () => {
         }}
         value={value.cable}
       />
-
       <OnOffSwitch
         onValueChange={() => {
           setHave((state) => {
@@ -676,6 +750,17 @@ const ApartmentInput: FC = () => {
         }}
         value={have.lift}
         label="Лифт"
+      />
+      <OnOffSwitch
+        onValueChange={() => {
+          setValue((state) => {
+            const copy = { ...state };
+            copy.earthSystem = !copy.earthSystem;
+            return copy;
+          });
+        }}
+        value={value.earthSystem}
+        label={value.earthSystem ? "TN-S систем" : "TT систем"}
       />
 
       {/* Хүчний төхөөрөмжүүд... */}
