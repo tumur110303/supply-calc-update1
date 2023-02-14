@@ -13,20 +13,22 @@ const CalcContext = createContext<{
   currentOnePhase: CurrentOnePhase;
   equilentPowerFactor: EquilentPowerFactor;
   classifyPlumbLoad: ClassifyPlumbLoad;
+  sectionFromDrop: SectionFromDrop;
+  contactorRelay: Contactor;
 } | null>(null);
 
 type EquilentPowerFactor = (loads: number[], pfs: number[]) => number | string;
 
 type PtbCalc = (capacity: number, transformerNumber: number) => string;
 
-type CalcPlumb = (value: number, load: number) => number;
+type CalcPlumb = (quantity: number, load: number) => number;
 type Interpolation = (
   userValue: number,
   key: number[],
   value: number[]
 ) => number;
 type ElevatorCalc = (
-  value: number,
+  quantity: number,
   load: number,
   twelveFloor: boolean
 ) => number;
@@ -43,14 +45,14 @@ type Conductor = (
   conductorType: "CC" | "CW" | "AC" | "AW",
   earthType?: boolean,
   onePhase?: boolean
-) => string | object;
+) => string | [string, number];
 type GetLargeValue = (value: number, arr: number[]) => number | string;
 type ApartmentCalc = (numberApartment: number) => number;
 type ClassifyPlumbLoad = (loads: number[]) => object;
 type CurrentThreePhase = (
   load: number,
   powerFactor: number,
-  delta?: number,
+  delta?: boolean,
   mainUnit?: boolean
 ) => number;
 type VoltageDrop = (
@@ -71,6 +73,7 @@ type SectionFromDrop = (
   material: "CC" | "CW" | "AC" | "AW",
   onePhase?: boolean
 ) => number | string;
+type Contactor = (current: number) => number | string;
 
 // ########################## ҮНДСЭН ФУНКЦ ################################
 export const CalcStore: FC = ({ children }) => {
@@ -137,18 +140,14 @@ export const CalcStore: FC = ({ children }) => {
   };
 
   // Сангийн ачаалал тодорхойлох функц...
-  const calcPlumb = (numberEquipment: number, totalLoad: number) => {
+  const calcPlumb = (quantity: number, totalLoad: number) => {
     let coeff: number = 0;
-    if (numberEquipment == 3) coeff = 0.9;
-    else if (numberEquipment == 200) coeff = 0.5;
-    if (numberEquipment > 3 && numberEquipment < 200)
-      coeff = interpolation(
-        numberEquipment,
-        numberTabPlumb,
-        coefficientPlumbTab
-      );
-    if (numberEquipment < 3) coeff = 1;
-    if (numberEquipment > 200) coeff = 0.5;
+    if (quantity == 3) coeff = 0.9;
+    else if (quantity == 200) coeff = 0.5;
+    if (quantity > 3 && quantity < 200)
+      coeff = interpolation(quantity, numberTabPlumb, coefficientPlumbTab);
+    if (quantity < 3) coeff = 1;
+    if (quantity > 200) coeff = 0.5;
 
     const plumbLoad = totalLoad * coeff;
 
@@ -157,60 +156,60 @@ export const CalcStore: FC = ({ children }) => {
 
   // Лифтний ачаалал тодорхойлох функцууд...
   const elevatorCalc = (
-    numberEquipment: number,
+    quantity: number,
     totalLoad: number,
     moreThanFloor: boolean
   ) => {
     let coeffElevator = 0;
 
     if (moreThanFloor) {
-      if (numberEquipment == 1) coeffElevator = 1;
-      else if (numberEquipment < 4) coeffElevator = 0.9;
-      else if (numberEquipment < 6) coeffElevator = 0.8;
-      else if (numberEquipment == 6) coeffElevator = 0.75;
-      else if (numberEquipment > 6 && numberEquipment < 10) {
+      if (quantity == 1) coeffElevator = 1;
+      else if (quantity < 4) coeffElevator = 0.9;
+      else if (quantity < 6) coeffElevator = 0.8;
+      else if (quantity == 6) coeffElevator = 0.75;
+      else if (quantity > 6 && quantity < 10) {
         coeffElevator = interpolation(
-          numberEquipment,
+          quantity,
           numberElevatorTab,
           moreThanTwelve
         );
-      } else if (numberEquipment == 10) coeffElevator = 0.6;
-      else if (numberEquipment > 10 && numberEquipment < 20) {
+      } else if (quantity == 10) coeffElevator = 0.6;
+      else if (quantity > 10 && quantity < 20) {
         coeffElevator = interpolation(
-          numberEquipment,
+          quantity,
           numberElevatorTab,
           moreThanTwelve
         );
-      } else if (numberEquipment == 20) coeffElevator = 0.5;
-      else if (numberEquipment > 20 && numberEquipment < 26) {
+      } else if (quantity == 20) coeffElevator = 0.5;
+      else if (quantity > 20 && quantity < 26) {
         coeffElevator = interpolation(
-          numberEquipment,
+          quantity,
           numberElevatorTab,
           moreThanTwelve
         );
       } else coeffElevator = 0.4;
     } else {
-      if (numberEquipment == 1) coeffElevator = 1;
-      else if (numberEquipment < 4) coeffElevator = 0.8;
-      else if (numberEquipment < 6) coeffElevator = 0.7;
-      else if (numberEquipment == 6) coeffElevator = 0.65;
-      else if (numberEquipment > 6 && numberEquipment < 10) {
+      if (quantity == 1) coeffElevator = 1;
+      else if (quantity < 4) coeffElevator = 0.8;
+      else if (quantity < 6) coeffElevator = 0.7;
+      else if (quantity == 6) coeffElevator = 0.65;
+      else if (quantity > 6 && quantity < 10) {
         coeffElevator = interpolation(
-          numberEquipment,
+          quantity,
           numberElevatorTab,
           lessThanTwelve
         );
-      } else if (numberEquipment == 10) coeffElevator = 0.5;
-      else if (numberEquipment > 10 && numberEquipment < 20) {
+      } else if (quantity == 10) coeffElevator = 0.5;
+      else if (quantity > 10 && quantity < 20) {
         coeffElevator = interpolation(
-          numberEquipment,
+          quantity,
           numberElevatorTab,
           lessThanTwelve
         );
-      } else if (numberEquipment == 20) coeffElevator = 0.4;
-      else if (numberEquipment > 20 && numberEquipment < 26) {
+      } else if (quantity == 20) coeffElevator = 0.4;
+      else if (quantity > 20 && quantity < 26) {
         coeffElevator = interpolation(
-          numberEquipment,
+          quantity,
           numberElevatorTab,
           lessThanTwelve
         );
@@ -331,7 +330,7 @@ export const CalcStore: FC = ({ children }) => {
       630, 800, 1000, 1600,
     ];
 
-    const circuitBreakerCurrent = getLargeValue(current, circBreaker);
+    const circuitBreakerCurrent = getLargeValue(current * 1.15, circBreaker);
 
     return circuitBreakerCurrent;
   };
@@ -347,252 +346,252 @@ export const CalcStore: FC = ({ children }) => {
     const aluminumCable220 = [
       {
         section: 2.5,
-        text: (earthType) ? "3x2.5мм.кв" : "2x2.5мм.кв",
-        allowCurrent: (earthType) ? 19 : 21,
+        text: earthType ? "3x2.5 мм.кв" : "2x2.5 мм.кв",
+        allowCurrent: earthType ? 19 : 21,
       },
       {
         section: 4,
-        text: (earthType) ? "3x4мм.кв" : "2x4мм.кв",
-        allowCurrent: (earthType) ? 27 : 29,
+        text: earthType ? "3x4 мм.кв" : "2x4 мм.кв",
+        allowCurrent: earthType ? 27 : 29,
       },
       {
         section: 6,
-        text: (earthType) ? "3x6мм.кв" : "2x6мм.кв",
-        allowCurrent: (earthType) ? 32 : 38,
+        text: earthType ? "3x6 мм.кв" : "2x6 мм.кв",
+        allowCurrent: earthType ? 32 : 38,
       },
       {
         section: 10,
-        text: (earthType) ? "3x10мм.кв" : "2x10мм.кв",
-        allowCurrent: (earthType) ? 42 : 55,
+        text: earthType ? "3x10 мм.кв" : "2x10 мм.кв",
+        allowCurrent: earthType ? 42 : 55,
       },
       {
         section: 16,
-        text: (earthType) ? "3x16мм.кв" : "2x16мм.кв",
-        allowCurrent: (earthType) ? 60 : 70,
+        text: earthType ? "3x16 мм.кв" : "2x16 мм.кв",
+        allowCurrent: earthType ? 60 : 70,
       },
       {
         section: 25,
-        text: (earthType) ? "3x25мм.кв" : "2x25мм.кв",
-        allowCurrent: (earthType) ? 75 : 90,
+        text: earthType ? "3x25 мм.кв" : "2x25 мм.кв",
+        allowCurrent: earthType ? 75 : 90,
       },
       {
         section: 35,
-        text: (earthType) ? "3x35мм.кв" : "2x35мм.кв",
-        allowCurrent: (earthType) ? 90 : 105,
+        text: earthType ? "3x35 мм.кв" : "2x35 мм.кв",
+        allowCurrent: earthType ? 90 : 105,
       },
       {
         section: 50,
-        text: (earthType) ? "3x50мм.кв" : "2x50мм.кв",
-        allowCurrent: (earthType) ? 110 : 135,
+        text: earthType ? "3x50 мм.кв" : "2x50 мм.кв",
+        allowCurrent: earthType ? 110 : 135,
       },
       {
         section: 70,
-        text: (earthType) ? "3x70мм.кв" : "2x70мм.кв",
-        allowCurrent: (earthType) ? 140 : 165,
+        text: earthType ? "3x70 мм.кв" : "2x70 мм.кв",
+        allowCurrent: earthType ? 140 : 165,
       },
       {
         section: 95,
-        text: (earthType) ? "3x95мм.кв" : "2x95мм.кв",
-        allowCurrent: (earthType) ? 170 : 200,
+        text: earthType ? "3x95 мм.кв" : "2x95 мм.кв",
+        allowCurrent: earthType ? 170 : 200,
       },
       {
         section: 120,
-        text: (earthType) ? "3x120мм.кв" : "2x120мм.кв",
-        allowCurrent: (earthType) ? 200 : 230,
+        text: earthType ? "3x120 мм.кв" : "2x120 мм.кв",
+        allowCurrent: earthType ? 200 : 230,
       },
       {
         section: 150,
-        text: (earthType) ? "3x150мм.кв" : "2x150мм.кв",
-        allowCurrent: (earthType) ? 235 : 270,
+        text: earthType ? "3x150 мм.кв" : "2x150 мм.кв",
+        allowCurrent: earthType ? 235 : 270,
       },
     ];
 
     const aluminumWire220 = [
       {
         section: 2.5,
-        text: (earthType) ? "3x(1x2.5)мм.кв" : "2x(1x2.5)мм.кв",
-        allowCurrent: (earthType) ? 19 : 20,
+        text: earthType ? "3x(1x2.5) мм.кв" : "2x(1x2.5) мм.кв",
+        allowCurrent: earthType ? 19 : 20,
       },
       {
         section: 4,
-        text: (earthType) ? "3x(1x4)мм.кв" : "2x(1x4)мм.кв",
+        text: earthType ? "3x(1x4) мм.кв" : "2x(1x4) мм.кв",
         allowCurrent: 28,
       },
       {
         section: 6,
-        text: (earthType) ? "3x(1x6)мм.кв" : "2x(1x6)мм.кв",
-        allowCurrent: (earthType) ? 32 : 36,
+        text: earthType ? "3x(1x6) мм.кв" : "2x(1x6) мм.кв",
+        allowCurrent: earthType ? 32 : 36,
       },
       {
         section: 10,
-        text: (earthType) ? "3x(1x10)мм.кв" : "2x(1x10)мм.кв",
-        allowCurrent: (earthType) ? 47 : 50,
+        text: earthType ? "3x(1x10) мм.кв" : "2x(1x10) мм.кв",
+        allowCurrent: earthType ? 47 : 50,
       },
       {
         section: 16,
-        text: (earthType) ? "3x(1x16)мм.кв" : "2x(1x16)мм.кв",
+        text: earthType ? "3x(1x16) мм.кв" : "2x(1x16) мм.кв",
         allowCurrent: 60,
       },
       {
         section: 25,
-        text: (earthType) ? "3x(1x25)мм.кв" : "2x(1x25)мм.кв",
-        allowCurrent: (earthType) ? 80 : 85,
+        text: earthType ? "3x(1x25) мм.кв" : "2x(1x25) мм.кв",
+        allowCurrent: earthType ? 80 : 85,
       },
       {
         section: 35,
-        text: (earthType) ? "3x(1x35)мм.кв" : "2x(1x35)мм.кв",
-        allowCurrent: (earthType) ? 95 : 100,
+        text: earthType ? "3x(1x35) мм.кв" : "2x(1x35) мм.кв",
+        allowCurrent: earthType ? 95 : 100,
       },
       {
         section: 50,
-        text: (earthType) ? "3x(1x50)мм.кв" : "2x(1x50)мм.кв",
-        allowCurrent: (earthType) ? 130 : 140,
+        text: earthType ? "3x(1x50) мм.кв" : "2x(1x50) мм.кв",
+        allowCurrent: earthType ? 130 : 140,
       },
       {
         section: 70,
-        text: (earthType) ? "3x(1x70)мм.кв" : "2x(1x70)мм.кв",
-        allowCurrent: (earthType) ? 165 : 175,
+        text: earthType ? "3x(1x70) мм.кв" : "2x(1x70) мм.кв",
+        allowCurrent: earthType ? 165 : 175,
       },
       {
         section: 95,
-        text: (earthType) ? "3x(1x95)мм.кв" : "2x(1x95)мм.кв",
-        allowCurrent: (earthType) ? 200 : 215,
+        text: earthType ? "3x(1x95) мм.кв" : "2x(1x95) мм.кв",
+        allowCurrent: earthType ? 200 : 215,
       },
       {
         section: 120,
-        text: (earthType) ? "3x(1x120)мм.кв" : "2x(1x120)мм.кв",
-        allowCurrent: (earthType) ? 220 : 245,
+        text: earthType ? "3x(1x120) мм.кв" : "2x(1x120) мм.кв",
+        allowCurrent: earthType ? 220 : 245,
       },
       {
         section: 150,
-        text: (earthType) ? "3x(1x150)мм.кв" : "2x(1x150)мм.кв",
-        allowCurrent: (earthType) ? 255 : 275,
+        text: earthType ? "3x(1x150) мм.кв" : "2x(1x150) мм.кв",
+        allowCurrent: earthType ? 255 : 275,
       },
     ];
 
     const copperCable220 = [
       {
         section: 2.5,
-        text: (earthType) ? "3x2.5мм.кв" : "2x2.5мм.кв",
-        allowCurrent: (earthType) ? 25 : 27,
+        text: earthType ? "3x2.5 мм.кв" : "2x2.5 мм.кв",
+        allowCurrent: earthType ? 25 : 27,
       },
       {
         section: 4,
-        text: (earthType) ? "3x4мм.кв" : "2x4мм.кв",
-        allowCurrent: (earthType) ? 35 : 38,
+        text: earthType ? "3x4 мм.кв" : "2x4 мм.кв",
+        allowCurrent: earthType ? 35 : 38,
       },
       {
         section: 6,
-        text: (earthType) ? "3x6мм.кв" : "2x6мм.кв",
-        allowCurrent: (earthType) ? 42 : 50,
+        text: earthType ? "3x6 мм.кв" : "2x6 мм.кв",
+        allowCurrent: earthType ? 42 : 50,
       },
       {
         section: 10,
-        text: (earthType) ? "3x10мм.кв" : "2x10мм.кв",
-        allowCurrent: (earthType) ? 55 : 70,
+        text: earthType ? "3x10 мм.кв" : "2x10 мм.кв",
+        allowCurrent: earthType ? 55 : 70,
       },
       {
         section: 16,
-        text: (earthType) ? "3x16мм.кв" : "2x16мм.кв",
-        allowCurrent: (earthType) ? 75 : 90,
+        text: earthType ? "3x16 мм.кв" : "2x16 мм.кв",
+        allowCurrent: earthType ? 75 : 90,
       },
       {
         section: 25,
-        text: (earthType) ? "3x25мм.кв" : "2x25мм.кв",
-        allowCurrent: (earthType) ? 95 : 115,
+        text: earthType ? "3x25 мм.кв" : "2x25 мм.кв",
+        allowCurrent: earthType ? 95 : 115,
       },
       {
         section: 35,
-        text: (earthType) ? "3x35мм.кв" : "2x35мм.кв",
-        allowCurrent: (earthType) ? 120 : 140,
+        text: earthType ? "3x35 мм.кв" : "2x35 мм.кв",
+        allowCurrent: earthType ? 120 : 140,
       },
       {
         section: 50,
-        text: (earthType) ? "3x50мм.кв" : "2x50мм.кв",
-        allowCurrent: (earthType) ? 145 : 175,
+        text: earthType ? "3x50 мм.кв" : "2x50 мм.кв",
+        allowCurrent: earthType ? 145 : 175,
       },
       {
         section: 70,
-        text: (earthType) ? "3x70мм.кв" : "2x70мм.кв",
-        allowCurrent: (earthType) ? 180 : 215,
+        text: earthType ? "3x70 мм.кв" : "2x70 мм.кв",
+        allowCurrent: earthType ? 180 : 215,
       },
       {
         section: 95,
-        text: (earthType) ? "3x95мм.кв" : "2x95мм.кв",
-        allowCurrent: (earthType) ? 220 : 260,
+        text: earthType ? "3x95 мм.кв" : "2x95 мм.кв",
+        allowCurrent: earthType ? 220 : 260,
       },
       {
         section: 120,
-        text: (earthType) ? "3x120мм.кв" : "2x120мм.кв",
-        allowCurrent: (earthType) ? 300 : 260,
+        text: earthType ? "3x120 мм.кв" : "2x120 мм.кв",
+        allowCurrent: earthType ? 300 : 260,
       },
       {
         section: 150,
-        text: (earthType) ? "3x150мм.кв" : "2x150мм.кв",
-        allowCurrent: (earthType) ? 305 : 350,
+        text: earthType ? "3x150 мм.кв" : "2x150 мм.кв",
+        allowCurrent: earthType ? 305 : 350,
       },
     ];
 
     const copperWire220 = [
       {
         section: 2.5,
-        text: (earthType) ? "3x(1x2.5)мм.кв" : "2x(1x2.5)мм.кв",
-        allowCurrent: (earthType) ? 25 : 27,
+        text: earthType ? "3x(1x2.5) мм.кв" : "2x(1x2.5) мм.кв",
+        allowCurrent: earthType ? 25 : 27,
       },
       {
         section: 4,
-        text: (earthType) ? "3x(1x4)мм.кв" : "2x(1x4)мм.кв",
-        allowCurrent: (earthType) ? 35 : 38,
+        text: earthType ? "3x(1x4) мм.кв" : "2x(1x4) мм.кв",
+        allowCurrent: earthType ? 35 : 38,
       },
       {
         section: 6,
-        text: (earthType) ? "3x(1x6)мм.кв" : "2x(1x6)мм.кв",
-        allowCurrent: (earthType) ? 42 : 46,
+        text: earthType ? "3x(1x6) мм.кв" : "2x(1x6) мм.кв",
+        allowCurrent: earthType ? 42 : 46,
       },
       {
         section: 10,
-        text: (earthType) ? "3x(1x10)мм.кв" : "2x(1x10)мм.кв",
-        allowCurrent: (earthType) ? 60 : 70,
+        text: earthType ? "3x(1x10) мм.кв" : "2x(1x10) мм.кв",
+        allowCurrent: earthType ? 60 : 70,
       },
       {
         section: 16,
-        text: (earthType) ? "3x(1x16)мм.кв" : "2x(1x16)мм.кв",
-        allowCurrent: (earthType) ? 80 : 85,
+        text: earthType ? "3x(1x16) мм.кв" : "2x(1x16) мм.кв",
+        allowCurrent: earthType ? 80 : 85,
       },
       {
         section: 25,
-        text: (earthType) ? "3x(1x25)мм.кв" : "2x(1x25)мм.кв",
-        allowCurrent: (earthType) ? 100 : 115,
+        text: earthType ? "3x(1x25) мм.кв" : "2x(1x25) мм.кв",
+        allowCurrent: earthType ? 100 : 115,
       },
       {
         section: 35,
-        text: (earthType) ? "3x(1x35)мм.кв" : "2x(1x35)мм.кв",
-        allowCurrent: (earthType) ? 125 : 135,
+        text: earthType ? "3x(1x35) мм.кв" : "2x(1x35) мм.кв",
+        allowCurrent: earthType ? 125 : 135,
       },
       {
         section: 50,
-        text: (earthType) ? "3x(1x50)мм.кв" : "2x(1x50)мм.кв",
-        allowCurrent: (earthType) ? 170 : 185,
+        text: earthType ? "3x(1x50) мм.кв" : "2x(1x50) мм.кв",
+        allowCurrent: earthType ? 170 : 185,
       },
       {
         section: 70,
-        text: (earthType) ? "3x(1x70)мм.кв" : "2x(1x70)мм.кв",
-        allowCurrent: (earthType) ? 210 : 225,
+        text: earthType ? "3x(1x70) мм.кв" : "2x(1x70) мм.кв",
+        allowCurrent: earthType ? 210 : 225,
       },
       {
         section: 95,
-        text: (earthType) ? "3x(1x95)мм.кв" : "2x(1x95)мм.кв",
-        allowCurrent: (earthType) ? 255 : 275,
+        text: earthType ? "3x(1x95) мм.кв" : "2x(1x95) мм.кв",
+        allowCurrent: earthType ? 255 : 275,
       },
       {
         section: 120,
-        text: (earthType) ? "3x(1x120)мм.кв" : "2x(1x120)мм.кв",
-        allowCurrent: (earthType) ? 290 : 315,
+        text: earthType ? "3x(1x120) мм.кв" : "2x(1x120) мм.кв",
+        allowCurrent: earthType ? 290 : 315,
       },
       {
         section: 150,
-        text: (earthType) ? "3x(1x150)мм.кв" : "2x(1x150)мм.кв",
-        allowCurrent: (earthType) ? 330 : 360,
+        text: earthType ? "3x(1x150) мм.кв" : "2x(1x150) мм.кв",
+        allowCurrent: earthType ? 330 : 360,
       },
     ];
 
@@ -600,322 +599,277 @@ export const CalcStore: FC = ({ children }) => {
     const aluminumCable380 = [
       {
         section: 2.5,
-        text: (earthType) ? "5x2.5мм.кв" : "4x2.5мм.кв",
-        allowCurrent: (earthType) ? 17 : 17,
+        text: earthType ? "5x2.5 мм.кв" : "4x2.5 мм.кв",
+        allowCurrent: earthType ? 17 : 17,
       },
       {
         section: 4,
-        text: (earthType) ? "5x4мм.кв" : "4x4мм.кв",
-        allowCurrent: (earthType) ? 24 : 24,
+        text: earthType ? "5x4 мм.кв" : "4x4 мм.кв",
+        allowCurrent: earthType ? 24 : 24,
       },
       {
         section: 6,
-        text: (earthType) ? "5x6мм.кв" : "4x6мм.кв",
-        allowCurrent: (earthType) ? 29 : 29,
+        text: earthType ? "5x6 мм.кв" : "4x6 мм.кв",
+        allowCurrent: earthType ? 29 : 29,
       },
       {
         section: 10,
-        text: (earthType) ? "5x10мм.кв" : "4x10мм.кв",
-        allowCurrent: (earthType) ? 38 : 38,
+        text: earthType ? "5x10 мм.кв" : "4x10 мм.кв",
+        allowCurrent: earthType ? 38 : 38,
       },
       {
         section: 16,
-        text: (earthType) ? "5x16мм.кв" : "4x16мм.кв",
-        allowCurrent: (earthType) ? 54 : 54,
+        text: earthType ? "5x16 мм.кв" : "4x16 мм.кв",
+        allowCurrent: earthType ? 54 : 54,
       },
       {
         section: 25,
-        text: (earthType) ? "4x25+1x16мм.кв" : "3x25+1x16мм.кв",
-        allowCurrent: (earthType) ? 68 : 68,
+        text: earthType ? "4x25+1x16 мм.кв" : "3x25+1x16 мм.кв",
+        allowCurrent: earthType ? 68 : 68,
       },
       {
         section: 35,
-        text: (earthType) ? "4x35+1x25мм.кв" : "3x35+1x25мм.кв",
-        allowCurrent: (earthType) ? 81 : 81,
+        text: earthType ? "4x35+1x25 мм.кв" : "3x35+1x25 мм.кв",
+        allowCurrent: earthType ? 81 : 81,
       },
       {
         section: 50,
-        text: (earthType) ? "4x50+1x25мм.кв" : "3x50+1x25мм.кв",
-        allowCurrent: (earthType) ? 100 : 100,
+        text: earthType ? "4x50+1x25 мм.кв" : "3x50+1x25 мм.кв",
+        allowCurrent: earthType ? 100 : 100,
       },
       {
         section: 70,
-        text: (earthType) ? "4x70+1x35мм.кв" : "3x70+1x35мм.кв",
-        allowCurrent: (earthType) ? 126 : 126,
+        text: earthType ? "4x70+1x35 мм.кв" : "3x70+1x35 мм.кв",
+        allowCurrent: earthType ? 126 : 126,
       },
       {
         section: 95,
-        text: (earthType) ? "4x95+1x50мм.кв" : "3x95+1x50мм.кв",
-        allowCurrent: (earthType) ? 153 : 153,
+        text: earthType ? "4x95+1x50 мм.кв" : "3x95+1x50 мм.кв",
+        allowCurrent: earthType ? 153 : 153,
       },
       {
         section: 120,
-        text: (earthType) ? "4x120+1x70мм.кв" : "3x120+1x70мм.кв",
-        allowCurrent: (earthType) ? 190 : 190,
+        text: earthType ? "4x120+1x70 мм.кв" : "3x120+1x70 мм.кв",
+        allowCurrent: earthType ? 190 : 190,
       },
       {
         section: 150,
-        text: (earthType) ? "4x150+1x95мм.кв" : "3x150+1x95мм.кв",
-        allowCurrent: (earthType) ? 212 : 212,
+        text: earthType ? "4x150+1x95 мм.кв" : "3x150+1x95 мм.кв",
+        allowCurrent: earthType ? 212 : 212,
       },
       {
         section: 185,
-        text: (earthType) ? "4x185+1x95мм.кв" : "3x185+1x95мм.кв",
-        allowCurrent: (earthType) ? 241 : 241,
+        text: earthType ? "4x185+1x95 мм.кв" : "3x185+1x95 мм.кв",
+        allowCurrent: earthType ? 241 : 241,
       },
       {
         section: 240,
-        text: (earthType) ? "4x240+1x120мм.кв" : "3x240+1x120мм.кв",
-        allowCurrent: (earthType) ? 274 : 274,
+        text: earthType ? "4x240+1x120 мм.кв" : "3x240+1x120 мм.кв",
+        allowCurrent: earthType ? 274 : 274,
       },
     ];
 
     const copperCable380 = [
       {
         section: 2.5,
-        text: (earthType) ? "5x2.5мм.кв" : "4x2.5мм.кв",
-        allowCurrent: (earthType) ? 22 : 22,
+        text: earthType ? "5x2.5 мм.кв" : "4x2.5 мм.кв",
+        allowCurrent: earthType ? 22 : 22,
       },
       {
         section: 4,
-        text: (earthType) ? "5x4мм.кв" : "4x4мм.кв",
-        allowCurrent: (earthType) ? 31 : 31,
+        text: earthType ? "5x4 мм.кв" : "4x4 мм.кв",
+        allowCurrent: earthType ? 31 : 31,
       },
       {
         section: 6,
-        text: (earthType) ? "5x6мм.кв" : "4x6мм.кв",
-        allowCurrent: (earthType) ? 38 : 38,
+        text: earthType ? "5x6 мм.кв" : "4x6 мм.кв",
+        allowCurrent: earthType ? 38 : 38,
       },
       {
         section: 10,
-        text: (earthType) ? "5x10мм.кв" : "4x10мм.кв",
-        allowCurrent: (earthType) ? 50 : 50,
+        text: earthType ? "5x10 мм.кв" : "4x10 мм.кв",
+        allowCurrent: earthType ? 50 : 50,
       },
       {
         section: 16,
-        text: (earthType) ? "5x16мм.кв" : "4x16мм.кв",
-        allowCurrent: (earthType) ? 68 : 68,
+        text: earthType ? "5x16 мм.кв" : "4x16 мм.кв",
+        allowCurrent: earthType ? 68 : 68,
       },
       {
         section: 25,
-        text: (earthType) ? "4x25+1x16мм.кв" : "3x25+1x16мм.кв",
-        allowCurrent: (earthType) ? 85 : 85,
+        text: earthType ? "4x25+1x16 мм.кв" : "3x25+1x16 мм.кв",
+        allowCurrent: earthType ? 85 : 85,
       },
       {
         section: 35,
-        text: (earthType) ? "4x35+1x25мм.кв" : "3x35+1x25мм.кв",
-        allowCurrent: (earthType) ? 108 : 108,
+        text: earthType ? "4x35+1x25 мм.кв" : "3x35+1x25 мм.кв",
+        allowCurrent: earthType ? 108 : 108,
       },
       {
         section: 50,
-        text: (earthType) ? "4x50+1x25мм.кв" : "3x50+1x25мм.кв",
-        allowCurrent: (earthType) ? 130 : 130,
+        text: earthType ? "4x50+1x25 мм.кв" : "3x50+1x25 мм.кв",
+        allowCurrent: earthType ? 130 : 130,
       },
       {
         section: 70,
-        text: (earthType) ? "4x70+1x35мм.кв" : "3x70+1x35мм.кв",
-        allowCurrent: (earthType) ? 162 : 162,
+        text: earthType ? "4x70+1x35 мм.кв" : "3x70+1x35 мм.кв",
+        allowCurrent: earthType ? 162 : 162,
       },
       {
         section: 95,
-        text: (earthType) ? "4x95+1x50мм.кв" : "3x95+1x50мм.кв",
-        allowCurrent: (earthType) ? 200 : 200,
+        text: earthType ? "4x95+1x50 мм.кв" : "3x95+1x50 мм.кв",
+        allowCurrent: earthType ? 200 : 200,
       },
       {
         section: 120,
-        text: (earthType) ? "4x120+1x70мм.кв" : "3x120+1x70мм.кв",
-        allowCurrent: (earthType) ? 234 : 234,
+        text: earthType ? "4x120+1x70 мм.кв" : "3x120+1x70 мм.кв",
+        allowCurrent: earthType ? 234 : 234,
       },
       {
         section: 150,
-        text: (earthType) ? "4x150+1x95мм.кв" : "3x150+1x95мм.кв",
-        allowCurrent: (earthType) ? 275 : 275,
+        text: earthType ? "4x150+1x95 мм.кв" : "3x150+1x95 мм.кв",
+        allowCurrent: earthType ? 275 : 275,
       },
       {
         section: 185,
-        text: (earthType) ? "4x185+1x95мм.кв" : "3x185+1x95мм.кв",
-        allowCurrent: (earthType) ? 308 : 308,
+        text: earthType ? "4x185+1x95 мм.кв" : "3x185+1x95 мм.кв",
+        allowCurrent: earthType ? 308 : 308,
       },
       {
         section: 240,
-        text: (earthType) ? "4x240+1x120мм.кв" : "3x240+1x120мм.кв",
-        allowCurrent: (earthType) ? 355 : 355,
+        text: earthType ? "4x240+1x120 мм.кв" : "3x240+1x120 мм.кв",
+        allowCurrent: earthType ? 355 : 355,
       },
     ];
 
     const aluminumWire380 = [
       {
         section: 2.5,
-        text: (earthType) ? "5x(1x2.5)мм.кв" : "4x(1x2.5)мм.кв",
-        allowCurrent: (earthType) ? 15 : 19,
+        text: earthType ? "5x(1x2.5) мм.кв" : "4x(1x2.5) мм.кв",
+        allowCurrent: earthType ? 15 : 19,
       },
       {
         section: 4,
-        text: (earthType) ? "5x(1x4)мм.кв" : "4x(1x4)мм.кв",
-        allowCurrent: (earthType) ? 22 : 23,
+        text: earthType ? "5x(1x4) мм.кв" : "4x(1x4) мм.кв",
+        allowCurrent: earthType ? 22 : 23,
       },
       {
         section: 6,
-        text: (earthType) ? "5x(1x6)мм.кв" : "4x(1x6)мм.кв",
-        allowCurrent: (earthType) ? 26 : 30,
+        text: earthType ? "5x(1x6) мм.кв" : "4x(1x6) мм.кв",
+        allowCurrent: earthType ? 26 : 30,
       },
       {
         section: 10,
-        text: (earthType) ? "5x(1x10)мм.кв" : "4x(1x10)мм.кв",
-        allowCurrent: (earthType) ? 38 : 39,
+        text: earthType ? "5x(1x10) мм.кв" : "4x(1x10) мм.кв",
+        allowCurrent: earthType ? 38 : 39,
       },
       {
         section: 16,
-        text: (earthType) ? "5x(1x16)мм.кв" : "4x(1x16)мм.кв",
-        allowCurrent: (earthType) ? 48 : 55,
+        text: earthType ? "5x(1x16) мм.кв" : "4x(1x16) мм.кв",
+        allowCurrent: earthType ? 48 : 55,
       },
       {
         section: 25,
-        text:
-          (earthType)
-            ? "4x(1x25)+(1x16)мм.кв"
-            : "3x(1x25)+(1x16)мм.кв",
-        allowCurrent: (earthType) ? 65 : 70,
+        text: earthType ? "4x(1x25)+(1x16) мм.кв" : "3x(1x25)+(1x16) мм.кв",
+        allowCurrent: earthType ? 65 : 70,
       },
       {
         section: 35,
-        text:
-          (earthType)
-            ? "4x(1x35)+(1x25)мм.кв"
-            : "3x(1x35)+(1x25)мм.кв",
-        allowCurrent: (earthType) ? 75 : 85,
+        text: earthType ? "4x(1x35)+(1x25) мм.кв" : "3x(1x35)+(1x25) мм.кв",
+        allowCurrent: earthType ? 75 : 85,
       },
       {
         section: 50,
-        text:
-          (earthType)
-            ? "4x(1x50)+(1x25)мм.кв"
-            : "3x(1x50)+(1x25)мм.кв",
-        allowCurrent: (earthType) ? 105 : 120,
+        text: earthType ? "4x(1x50)+(1x25) мм.кв" : "3x(1x50)+(1x25) мм.кв",
+        allowCurrent: earthType ? 105 : 120,
       },
       {
         section: 70,
-        text:
-          (earthType)
-            ? "4x(1x70)+(1x35)мм.кв"
-            : "3x(1x70)+(1x35)мм.кв",
-        allowCurrent: (earthType) ? 130 : 140,
+        text: earthType ? "4x(1x70)+(1x35) мм.кв" : "3x(1x70)+(1x35) мм.кв",
+        allowCurrent: earthType ? 130 : 140,
       },
       {
         section: 95,
-        text:
-          (earthType)
-            ? "4x(1x95)+(1x50)мм.кв"
-            : "3x(1x95)+(1x50)мм.кв",
-        allowCurrent: (earthType) ? 175 : 175,
+        text: earthType ? "4x(1x95)+(1x50) мм.кв" : "3x(1x95)+(1x50) мм.кв",
+        allowCurrent: earthType ? 175 : 175,
       },
       {
         section: 120,
-        text:
-          (earthType)
-            ? "4x(1x120)+(1x70)мм.кв"
-            : "3x(1x120)+(1x70)мм.кв",
-        allowCurrent: (earthType) ? 200 : 200,
+        text: earthType ? "4x(1x120)+(1x70) мм.кв" : "3x(1x120)+(1x70) мм.кв",
+        allowCurrent: earthType ? 200 : 200,
       },
     ];
 
     const copperWire380 = [
       {
         section: 2.5,
-        text: (earthType) ? "5x(1x2.5)мм.кв" : "4x(1x2.5)мм.кв",
-        allowCurrent: (earthType) ? 20 : 25,
+        text: earthType ? "5x(1x2.5) мм.кв" : "4x(1x2.5) мм.кв",
+        allowCurrent: earthType ? 20 : 25,
       },
       {
         section: 4,
-        text: (earthType) ? "5x(1x4)мм.кв" : "4x(1x4)мм.кв",
-        allowCurrent: (earthType) ? 28 : 30,
+        text: earthType ? "5x(1x4) мм.кв" : "4x(1x4) мм.кв",
+        allowCurrent: earthType ? 28 : 30,
       },
       {
         section: 6,
-        text: (earthType) ? "5x(1x6)мм.кв" : "4x(1x6)мм.кв",
-        allowCurrent: (earthType) ? 34 : 40,
+        text: earthType ? "5x(1x6) мм.кв" : "4x(1x6) мм.кв",
+        allowCurrent: earthType ? 34 : 40,
       },
       {
         section: 10,
-        text: (earthType) ? "5x(1x10)мм.кв" : "4x(1x10)мм.кв",
-        allowCurrent: (earthType) ? 48 : 50,
+        text: earthType ? "5x(1x10) мм.кв" : "4x(1x10) мм.кв",
+        allowCurrent: earthType ? 48 : 50,
       },
       {
         section: 16,
-        text: (earthType) ? "5x(1x16)мм.кв" : "4x(1x16)мм.кв",
-        allowCurrent: (earthType) ? 64 : 75,
+        text: earthType ? "5x(1x16) мм.кв" : "4x(1x16) мм.кв",
+        allowCurrent: earthType ? 64 : 75,
       },
       {
         section: 25,
-        text:
-          (earthType)
-            ? "4x(1x25)+(1x16)мм.кв"
-            : "3x(1x25)+(1x16)мм.кв",
-        allowCurrent: (earthType) ? 80 : 90,
+        text: earthType ? "4x(1x25)+(1x16) мм.кв" : "3x(1x25)+(1x16) мм.кв",
+        allowCurrent: earthType ? 80 : 90,
       },
       {
         section: 35,
-        text:
-          (earthType)
-            ? "4x(1x35)+(1x25)мм.кв"
-            : "3x(1x35)+(1x25)мм.кв",
-        allowCurrent: (earthType) ? 100 : 115,
+        text: earthType ? "4x(1x35)+(1x25) мм.кв" : "3x(1x35)+(1x25) мм.кв",
+        allowCurrent: earthType ? 100 : 115,
       },
       {
         section: 50,
-        text:
-          (earthType)
-            ? "4x(1x50)+(1x25)мм.кв"
-            : "3x(1x50)+(1x25)мм.кв",
-        allowCurrent: (earthType) ? 135 : 150,
+        text: earthType ? "4x(1x50)+(1x25) мм.кв" : "3x(1x50)+(1x25) мм.кв",
+        allowCurrent: earthType ? 135 : 150,
       },
       {
         section: 70,
-        text:
-          (earthType)
-            ? "4x(1x70)+(1x35)мм.кв"
-            : "3x(1x70)+(1x35)мм.кв",
-        allowCurrent: (earthType) ? 165 : 185,
+        text: earthType ? "4x(1x70)+(1x35) мм.кв" : "3x(1x70)+(1x35) мм.кв",
+        allowCurrent: earthType ? 165 : 185,
       },
       {
         section: 95,
-        text:
-          (earthType)
-            ? "4x(1x95)+(1x50)мм.кв"
-            : "3x(1x95)+(1x50)мм.кв",
-        allowCurrent: (earthType) ? 255 : 255,
+        text: earthType ? "4x(1x95)+(1x50) мм.кв" : "3x(1x95)+(1x50) мм.кв",
+        allowCurrent: earthType ? 255 : 255,
       },
       {
         section: 120,
-        text:
-          (earthType)
-            ? "4x(1x120)+(1x70)мм.кв"
-            : "3x(1x120)+(1x70)мм.кв",
-        allowCurrent: (earthType) ? 260 : 260,
+        text: earthType ? "4x(1x120)+(1x70) мм.кв" : "3x(1x120)+(1x70) мм.кв",
+        allowCurrent: earthType ? 260 : 260,
       },
       {
         section: 150,
-        text:
-          (earthType)
-            ? "4x(1x150)+(1x95)мм.кв"
-            : "3x(1x150)+(1x95)мм.кв",
-        allowCurrent: (earthType) ? 300 : 300,
+        text: earthType ? "4x(1x150)+(1x95) мм.кв" : "3x(1x150)+(1x95) мм.кв",
+        allowCurrent: earthType ? 300 : 300,
       },
       {
         section: 185,
-        text:
-          (earthType)
-            ? "4x(1x185)+(1x95)мм.кв"
-            : "3x(1x185)+(1x95)мм.кв",
-        allowCurrent: (earthType) ? 346 : 346,
+        text: earthType ? "4x(1x185)+(1x95) мм.кв" : "3x(1x185)+(1x95) мм.кв",
+        allowCurrent: earthType ? 346 : 346,
       },
       {
         section: 240,
-        text:
-          (earthType)
-            ? "4x(1x240)+(1x120)мм.кв"
-            : "3x(1x240)+(1x120)мм.кв",
-        allowCurrent: (earthType) ? 397 : 397,
+        text: earthType ? "4x(1x240)+(1x120) мм.кв" : "3x(1x240)+(1x120) мм.кв",
+        allowCurrent: earthType ? 397 : 397,
       },
     ];
 
@@ -952,10 +906,9 @@ export const CalcStore: FC = ({ children }) => {
     };
 
     const sectionObj = type();
-    console.log("Буцаж ирж байгаа утгаа шалгая: ", sectionObj);
 
     return sectionObj
-      ? sectionObj
+      ? [sectionObj.text, sectionObj.section]
       : "Нэг хэлхээгээр дамжуулахад ачаалал харьцангуй их байгаа тул, ачааллыг хоёр хувааж дамжуулахаар төлөвлөх нь илүү тохиромжтой!";
   };
 
@@ -966,6 +919,15 @@ export const CalcStore: FC = ({ children }) => {
     const moreThanFour = loads.filter((el) => el > 4);
 
     return { lessOne, oneToFour, moreThanFour };
+  };
+
+  // Контакторын гүйдэл тооцох...
+  const contactorRelay: Contactor = (current) => {
+    const contactorTable = [
+      9, 12, 18, 25, 32, 40, 50, 65, 80, 95, 115, 150, 185, 225, 265, 330,
+    ];
+    const contactor = getLargeValue(current, contactorTable);
+    return contactor;
   };
 
   // ########################### ТУСЛАХ ФУНКЦУУД  ################################
@@ -1040,6 +1002,8 @@ export const CalcStore: FC = ({ children }) => {
         currentOnePhase,
         equilentPowerFactor,
         classifyPlumbLoad,
+        sectionFromDrop,
+        contactorRelay,
       }}
     >
       {children}

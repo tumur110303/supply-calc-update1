@@ -18,7 +18,7 @@ export default () => {
     powerFactor?: number;
     lineLength?: number;
     acceptVoltageDrop?: number;
-    cable: string;
+    cable: "AC" | "CC" | "CW" | "AW";
   };
 
   type Error = {
@@ -31,7 +31,7 @@ export default () => {
 
   // Өгөгдөл
   const [value, setValue] = useState<Value>({
-    cable: "CC1",
+    cable: "AC",
   });
   const [acceptVoltage, setAcceptVoltage] = useState<any>();
   const [section, setSection] = useState<string | number>();
@@ -52,118 +52,77 @@ export default () => {
   const [threePhaseCheck, setThreePhaseCheck] = useState<boolean>(true);
 
   const cables = [
-    { label: "ВВГ", value: "CC1" },
-    { label: "КГ", value: "CC2" },
-    { label: "ВВГнг-LS", value: "CCF" },
-    { label: "АВБбШв", value: "AC1" },
-    { label: "АВВГ", value: "AC2" },
+    { label: "Хөнгөнцагаан кабель", value: "AC" },
+    { label: "Хөнгөнцагаан утас", value: "AW" },
+    { label: "Зэс кабель", value: "CC" },
+    { label: "Зэс утас", value: "CW" },
   ];
   // Үр дүн :
-  const [res, setRes] = useState<any>();
   const [result, setResult] = useState<any>();
 
   // ###########################  ГОЛ ТООЦООНЫ ФУНКЦУУД ###########################
-  const publicCalc = async (obj: any) => {
-    const normalResult = obj;
-    // Contactor & reley...
-    let releyCurrent = 0;
-    let contactorCurrent = 0;
-
-    if (threePhaseCheck) {
-      releyCurrent = normalResult.current * 1.05;
-      contactorCurrent = releyCurrent;
-    } else {
-      contactorCurrent = normalResult.current;
-    }
-
-    let turRes: any = "";
-
-    if (normalResult) turRes = Object.entries(normalResult);
-
-    let sectionRes = turRes[turRes.length - 1][1];
-
-    turRes.splice(turRes.length - 1, 1);
-
-    setSection((section) => (section = sectionRes));
-    setResult([
-      ...turRes.map((el: any) => el[1]),
-      contactorCurrent,
-      threePhaseCheck ? releyCurrent : 0,
-    ]);
-
-    await increase();
-  };
 
   const calc = () => {
-    const { loadMotor, powerFactor, lineLength, acceptVoltageDrop, cable } =
-      value;
+    if (calcContext) {
+      const { loadMotor, powerFactor, lineLength, acceptVoltageDrop } = value;
 
-    // Хуурах зорилготой хувьсагчид :
-    const loadStr = loadMotor + "";
-    const pfStr = powerFactor + "";
-    const lengthStr = lineLength + "";
-    const voltageStr = acceptVoltageDrop + "";
+      // Хуурах зорилготой хувьсагчид :
+      const loadStr = loadMotor + "";
+      const pfStr = powerFactor + "";
+      const lengthStr = lineLength + "";
+      const voltageStr = acceptVoltageDrop + "";
 
-    let load: number = 0;
-    let pf: number = 0;
-    let length: number = 0;
-    let voltage: number = 0;
+      let load: number = 0;
+      let pf: number = 0;
+      let length: number = 0;
+      let voltage: number = 0;
 
-    if (!loadMotor) {
-      load = 0;
-    } else {
-      load = parseFloat(loadStr);
+      if (!loadMotor) {
+        load = 0;
+      } else {
+        load = parseFloat(loadStr);
+      }
+
+      if (!powerFactor) {
+        pf = 0;
+      } else {
+        pf = parseFloat(pfStr);
+      }
+
+      if (!lineLength) {
+        length = 0;
+      } else {
+        length = parseFloat(lengthStr);
+      }
+
+      if (!acceptVoltageDrop) {
+        voltage = 0;
+      } else {
+        voltage = 5 + parseFloat(voltageStr);
+      }
+
+      setAcceptVoltage(voltage);
+
+      const section = calcContext.sectionFromDrop(
+        load,
+        length,
+        voltage,
+        value.cable,
+        !threePhaseCheck
+      );
+
+      const current = threePhaseCheck
+        ? calcContext.currentThreePhase(load, pf, !endConnectStar)
+        : calcContext.currentOnePhase(load, pf);
     }
 
-    if (!powerFactor) {
-      pf = 0;
-    } else {
-      pf = parseFloat(pfStr);
-    }
-
-    if (!lineLength) {
-      length = 0;
-    } else {
-      length = parseFloat(lengthStr);
-    }
-
-    if (!acceptVoltageDrop) {
-      voltage = 0;
-    } else {
-      voltage = 5 + parseFloat(voltageStr);
-    }
-
-    setAcceptVoltage(voltage);
-
-    const resDam = threePhaseCheck
-      ? calcContext?.currentOneEquipmentThreePhase(
-          load,
-          pf,
-          cable,
-          voltage,
-          length,
-          endConnectStar
-        )
-      : calcContext?.currentOneEquipmentOnePhase(
-          load,
-          pf,
-          cable,
-          voltage,
-          length
-        );
-
-    setRes(resDam);
     setVisible(true);
   };
-
-  useEffect(() => {
-    res && publicCalc(res);
-  }, [value, res, section, threePhaseCheck, endConnectStar]);
 
   // ############################  FORM -ТОЙ АЖИЛЛАХ ФУНКЦУУД  ############################
   const reset = () => {
     setValue({
-      cable: "CC1",
+      cable: "AC",
     });
     setResult(undefined);
     setSection(undefined);
@@ -275,7 +234,7 @@ export default () => {
       !value.powerFactor
     ) {
       disabled = true;
-    }
+    } else disabled = false;
 
     setDisabled(disabled);
   }, [value, errorShow]);

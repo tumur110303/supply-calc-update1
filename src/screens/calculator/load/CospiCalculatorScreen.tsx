@@ -99,7 +99,7 @@ const CospiCalculatorScreen: FC = () => {
   const [achaaAldsan, setAchaaAldsan] = useState<boolean>(false);
 
   // Тооцооны сүүлчийн үр дүн...
-  const [result, setResult] = useState<number | null>(0);
+  const [result, setResult] = useState<number | string | null>(0);
 
   // ############################### FORM ТОЙ АЖИЛЛАХ ФУНКЦ #############################
   const valueChanger = (
@@ -292,7 +292,7 @@ const CospiCalculatorScreen: FC = () => {
         title="Тооцооны хариу"
         reset={reset}
       >
-        <Text style={css.subtitle}>Үр дүн</Text>
+        <Text style={css.subtitle}>Үр дүн : </Text>
         {(() => {
           const data = [
             {
@@ -304,7 +304,7 @@ const CospiCalculatorScreen: FC = () => {
             <>
               {data.map(({ label, unit }, i) => {
                 return (
-                  <View key={i} style={css.modalItem}>
+                  <View key={i + 1} style={css.modalItem}>
                     <Text
                       style={{
                         flexDirection: "row",
@@ -324,7 +324,9 @@ const CospiCalculatorScreen: FC = () => {
                       </Text>
                       {result && (
                         <Text style={{ fontFamily: w400, flexWrap: "wrap" }}>
-                          {result && Math.round(result * 1000) / 1000} {unit}
+                          {typeof result === "number"
+                            ? Math.round(result * 1000) / 1000
+                            : result}
                         </Text>
                       )}
                     </Text>
@@ -421,9 +423,7 @@ const CospiCalculatorScreen: FC = () => {
                   : ""
                 : "",
             ]}
-            onChangeText={(value: any) =>
-              valueChanger(value, [branch, "load"], [1, 1000000])
-            }
+            onChangeText={(value: any) => valueChanger(value, [branch, "load"])}
             checkChangeText={(value: any) =>
               valueChanger(value, [branch, "pf"], [0, 1])
             }

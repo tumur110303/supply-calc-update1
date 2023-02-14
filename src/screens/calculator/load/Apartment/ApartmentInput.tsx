@@ -9,7 +9,6 @@ import { dark, light, main, w400, w500 } from "../../../../constants";
 import Modal from "../../../../components/ResultModal";
 import CountContext from "../../../../context/CountContext";
 import OnOffSwitch from "../../../../components/switches/OnOffSwitch";
-import FormSwitch from "../../../../components/switches/FormSwitch";
 
 type Value = {
   earthSystem?: boolean;
@@ -87,11 +86,8 @@ const ApartmentInput: FC = () => {
   const [visible, setVisible] = useState<boolean>(false);
   const [disabled, setDisabled] = useState<boolean>(true);
 
-  const [power, setPower] = useState<number>();
   const [result, setResult] = useState<any>();
-  const [section, setSection] = useState<string | number>();
   const [resultEmergency, setResultEmergency] = useState<any>();
-  const [sectionFire, setSectionFire] = useState<string | number>();
 
   useEffect(() => {
     // Товч идэвхитэй, идэвхигүйг тодорхойлно.
@@ -99,9 +95,7 @@ const ApartmentInput: FC = () => {
     disabled = !Object.values(error).every((el) => el !== true);
     if (!value.people) {
       disabled = true;
-    }
-
-    if (
+    } else if (
       (value.fan?.load && !value.fan.quantity) ||
       (!value.fan?.load && value.fan?.quantity)
     )
@@ -141,10 +135,7 @@ const ApartmentInput: FC = () => {
     });
     setResult(undefined);
     setResultEmergency(undefined);
-    setSectionFire(undefined);
     setVisible(false);
-    setSection(undefined);
-    setPower(undefined);
   };
 
   const valueChanger = (
@@ -221,6 +212,7 @@ const ApartmentInput: FC = () => {
       });
     }
   };
+
   const valueChangerButarhai = (
     text: string,
     id: keyof Value | [keyof Value, "load"],
@@ -284,69 +276,6 @@ const ApartmentInput: FC = () => {
     }
   };
 
-  const publicCalc = async (
-    huviinChadal: any,
-    coeff: any,
-    coeffElevator: any
-  ) => {
-    const { lighting, pump, fan, firePump, people, cable, heater, lift } =
-      value;
-    if (people && cable && calcContext) {
-      let pumpLoadValue = 0;
-      let funLoadValue = 0;
-      let heaterLoadValue = 0;
-      let elevatorLoadValue = 0;
-      let lightLoadValue = 0;
-      let firePumpLoadValue = 0;
-
-      let quantityHeater = 0;
-      let quantityFun = 0;
-      let quantityPump = 0;
-
-      // null undefined or 0
-      if (!lighting) {
-        lightLoadValue = 0;
-      } else if (parseFloat(lighting) < 11) {
-        lightLoadValue = 0;
-      } else {
-        lightLoadValue = parseFloat(lighting) - 10;
-      }
-
-      if (!pump?.quantity || !pump.load) {
-        pumpLoadValue = 0;
-        quantityPump = 0;
-      } else {
-        pumpLoadValue = parseFloat(pump.load);
-        quantityPump = pump.quantity;
-      }
-
-      if (!fan?.quantity || !fan.load) {
-        funLoadValue = 0;
-        quantityFun = 0;
-      } else {
-        funLoadValue = parseFloat(fan.load);
-        quantityFun = fan.quantity;
-      }
-
-      if (!heater?.quantity || !heater.load) {
-        heaterLoadValue = 0;
-        quantityHeater = 0;
-      } else {
-        heaterLoadValue = parseFloat(heater.load);
-        quantityHeater = heater.quantity;
-      }
-
-      if (!lift?.quantity || !lift.load) {
-        elevatorLoadValue = 0;
-      } else {
-        elevatorLoadValue = parseFloat(lift.load);
-      }
-
-      // Хэвийн үеийн тооцоо...
-      setVisible(true);
-    }
-  };
-
   const calc = async () => {
     if (calcContext) {
       const quantityHouse = value.people ? value.people : 0;
@@ -407,32 +336,48 @@ const ApartmentInput: FC = () => {
         [0.98, 0.8, 0.98, 0.65, 0.92]
       );
 
-      const threeSquart = Math.sqrt(3);
-      const huwaari =
-        typeof powerFactor === "number"
-          ? threeSquart * 380 * powerFactor
-          : 0.98;
-      const huwaariFire = threeSquart * 380 * 0.8;
-
       // Тооцооны гүйдэл...
-      const current = power / huwaari;
-      const currentFire = fireLoad / huwaariFire;
+      const current = calcContext.currentThreePhase(
+        power,
+        typeof powerFactor === "number" ? powerFactor : 0.98
+      );
+      const currentFire = calcContext.currentThreePhase(fireLoad, 0.8);
+
+      const capacity =
+        typeof powerFactor === "number" ? power / powerFactor : power;
+      const capacityFire = fireLoad / 0.8;
 
       const circuitBreaker = calcContext.circuitBreaker(current);
       const circuitBreakerFire = calcContext.circuitBreaker(currentFire);
 
       const section = calcContext.conductor(
-        typeof circuitBreaker === "number" ? circuitBreaker : 1600,
+        typeof circuitBreaker === "number" ? circuitBreaker : 2000,
         value.cable ? value.cable : "AC",
         value.earthSystem
-      );
+      )[0];
       const sectionFire = calcContext.conductor(
-        typeof circuitBreakerFire === "number" ? circuitBreakerFire : 1600,
-        value.cable ? value.cable : "AC",
+        typeof circuitBreakerFire === "number" ? circuitBreakerFire : 2000,
+        "CC",
         value.earthSystem
-      );
+      )[0];
+
+      setResult([
+        power,
+        current,
+        capacity,
+        powerFactor,
+        circuitBreaker,
+        section,
+      ]);
+      setResultEmergency([
+        fireLoad,
+        currentFire,
+        circuitBreakerFire,
+        sectionFire,
+      ]);
     }
 
+    setVisible(true);
     await increase();
   };
 
@@ -444,7 +389,7 @@ const ApartmentInput: FC = () => {
         title="Тооцооны хариу"
         reset={reset}
       >
-        <Text style={css.subtitle}>Өгөгдөл</Text>
+        <Text style={css.subtitle}>Өгөгдөл : </Text>
         {(() => {
           const data = [
             {
@@ -458,28 +403,28 @@ const ApartmentInput: FC = () => {
               unit: "кВт",
             },
             {
-              label: "Сэнсний суурилагдсан чадал",
+              label: "Сэнсний нийт чадал",
               value: value.fan?.load,
               unit: "кВт",
             },
             {
-              label: "Насосны суурилагдсан чадал",
+              label: "Насосны нийт чадал",
               value: value.pump?.load,
               unit: "кВт",
             },
             {
-              label: "Халаах төхөөрөмжийн суурилагдсан чадал",
+              label: "Халаах төхөөрөмжийн нийт чадал",
               value: value.heater?.load,
               unit: "кВт",
             },
             {
-              label: "Галын насос, сэнсний суурилагдсан чадал",
-              value: value.firePump,
+              label: "Лифтний нийт чадал",
+              value: value.lift?.load,
               unit: "кВт",
             },
             {
-              label: "Лифтний суурилагдсан чадал",
-              value: value.lift?.load,
+              label: "Галын насос, сэнсний чадал",
+              value: value.firePump,
               unit: "кВт",
             },
           ];
@@ -515,8 +460,13 @@ const ApartmentInput: FC = () => {
             </>
           );
         })()}
-        <Text style={css.subtitle}>Үр дүн</Text>
+        <Text style={css.subtitle}>Үр дүн : </Text>
         {(() => {
+          let labelCable = "Х/ц кабель";
+          if (value.cable === "CC") labelCable = "Зэс кабель";
+          else if (value.cable === "AW") labelCable = "Х/ц утас";
+          else if (value.cable === "CW") labelCable = "Зэс утас";
+          else labelCable = "Х/ц кабель";
           const data = [
             {
               label: "Тооцооны чадал",
@@ -539,15 +489,13 @@ const ApartmentInput: FC = () => {
               unit: "A",
             },
             {
-              label: "Кабель ",
-              value: `${
-                cables.find((item) => item.value === value.cable)?.label
-              } ${section}`,
+              label: labelCable,
+              unit: null,
             },
           ];
           return (
             <>
-              {data.map(({ label, unit, value }, i) => {
+              {data.map(({ label, unit }, i) => {
                 return (
                   <View key={i} style={css.modalItem}>
                     <Text
@@ -567,14 +515,11 @@ const ApartmentInput: FC = () => {
                       >
                         {label}:{" "}
                       </Text>
-                      {value && (
-                        <Text style={{ fontFamily: w400, flexWrap: "wrap" }}>
-                          {value}
-                        </Text>
-                      )}
                       {result && (
                         <Text style={{ fontFamily: w400, flexWrap: "wrap" }}>
-                          {result[i] && Math.round(result[i] * 1000) / 1000}{" "}
+                          {result[i] && typeof result[i] === "number"
+                            ? Math.round(result[i] * 1000) / 1000
+                            : result[i]}{" "}
                           {unit}
                         </Text>
                       )}
@@ -585,7 +530,9 @@ const ApartmentInput: FC = () => {
             </>
           );
         })()}
-        <Text style={css.subtitle}>Галын үед ажиллах төхөөрөмжүүд</Text>
+        {value.firePump ? (
+          <Text style={css.subtitle}>Галын төхөөрөмжүүд : </Text>
+        ) : null}
         {(() => {
           const data = [
             {
@@ -599,6 +546,10 @@ const ApartmentInput: FC = () => {
             {
               label: "Автомат таслуурын гүйдэл",
               unit: "A",
+            },
+            {
+              label: "Галд тэсвэртэй зэс кабель",
+              unit: null,
             },
           ];
           return value.firePump ? (
@@ -623,21 +574,19 @@ const ApartmentInput: FC = () => {
                       >
                         {label}:
                       </Text>
-                      <Text style={{ fontFamily: w400, flexWrap: "wrap" }}>
-                        {Math.round(resultEmergency[i] * 100) / 100} {unit}
-                      </Text>
+                      {resultEmergency && (
+                        <Text style={{ fontFamily: w400, flexWrap: "wrap" }}>
+                          {resultEmergency[i] &&
+                          typeof resultEmergency[i] === "number"
+                            ? Math.round(resultEmergency[i] * 1000) / 1000
+                            : resultEmergency[i]}{" "}
+                          {unit}
+                        </Text>
+                      )}
                     </View>
                   );
                 }
               })}
-              <View style={css.modalItem}>
-                <Text style={{ fontFamily: w400, color: main, marginRight: 5 }}>
-                  Кабель :
-                </Text>
-                <Text style={{ fontFamily: w400 }}>
-                  ВВГнг-(A)-LS {sectionFire}
-                </Text>
-              </View>
             </View>
           ) : null;
         })()}
