@@ -106,12 +106,9 @@ const ApartmentHousehold: FC = () => {
       const housingLoad = calcContext.apartmentCalc(quantityHouse);
       const current = calcContext.currentThreePhase(housingLoad, 0.98);
       const circuitBreaker = calcContext.circuitBreaker(current);
-      const conductor = calcContext.conductor(
-        typeof circuitBreaker === "number" ? circuitBreaker : 2000,
-        value.cable,
-        value.earthSystem
-      )[0];
-
+      // ################### !!!!!!!!!!!!!!!!!!!!!!
+      const conductor = "string авна шүү...";
+      // ##################### !!!!!!!!!!!!!!!!!!!!!!!!!!!
       setResult([housingLoad, current, 0.98, circuitBreaker, conductor]);
     }
 

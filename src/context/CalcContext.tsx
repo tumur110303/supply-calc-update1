@@ -45,8 +45,8 @@ type Conductor = (
   conductorType: "CC" | "CW" | "AC" | "AW",
   earthType?: boolean,
   onePhase?: boolean
-) => string | [string, number];
-type GetLargeValue = (value: number, arr: number[]) => number | string;
+) => number | string;
+type GetLargeValue = (value: number, arr: number[]) => number[] | string;
 type ApartmentCalc = (numberApartment: number) => number;
 type ClassifyPlumbLoad = (loads: number[]) => object;
 type CurrentThreePhase = (
@@ -74,6 +74,10 @@ type SectionFromDrop = (
   onePhase?: boolean
 ) => number | string;
 type Contactor = (current: number) => number | string;
+type UpperSection = (
+  heatSection: number,
+  dropSection: number
+) => [number, string];
 
 // ########################## ҮНДСЭН ФУНКЦ ################################
 export const CalcStore: FC = ({ children }) => {
@@ -94,6 +98,10 @@ export const CalcStore: FC = ({ children }) => {
   const numberElevatorTab = [3, 5, 6, 10, 20, 25];
   const moreThanTwelve = [0.9, 0.8, 0.75, 0.6, 0.5, 0.4];
   const lessThanTwelve = [0.8, 0.7, 0.65, 0.5, 0.4, 0.35];
+  // Хөндлөн огтлолын стандарт тавилууд...
+  const sectionTabs = [
+    2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240,
+  ];
 
   // ##########################  ТООЦООНЫ ФУНКЦУУД ... ###############################
   // Дэд станц сонгох...
@@ -302,6 +310,172 @@ export const CalcStore: FC = ({ children }) => {
     return drop;
   };
 
+  // Автомат сонгох 220/380В ...
+  const circuitBreaker: CircuitBreaker = (current) => {
+    const circBreaker = [
+      16, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 355, 400, 500,
+      630, 800, 1000, 1600,
+    ];
+
+    const circuitBreakerCurrent = getLargeValue(current * 1.15, circBreaker)[0];
+
+    return circuitBreakerCurrent;
+  };
+
+  // Сантехникийн ачааг cosф-д тааруулж ангилах функц...
+  const classifyPlumbLoad: ClassifyPlumbLoad = (loads: number[]) => {
+    const lessOne = loads.filter((el) => el < 1);
+    const oneToFour = loads.filter((el) => el >= 1 && el <= 4);
+    const moreThanFour = loads.filter((el) => el > 4);
+
+    return { lessOne, oneToFour, moreThanFour };
+  };
+
+  // Контакторын гүйдэл тооцох...
+  const contactorRelay: Contactor = (current) => {
+    const contactorTable = [
+      9, 12, 18, 25, 32, 40, 50, 65, 80, 95, 115, 150, 185, 225, 265, 330,
+    ];
+    const contactor = getLargeValue(current, contactorTable)[0];
+    return contactor;
+  };
+
+  // ############################## ДАМЖУУЛАГЧ ###############################
+  // Халалтын нөхцлөөр хөндлөн огтлол сонгох...
+  const conductor: Conductor = (
+    circuitBreakerCurrent,
+    conductorType,
+    earthType,
+    onePhase
+  ) => {
+    let arrCurrent: number[] = [];
+    // 380B кабелиуд...
+    const aluminumCable380 = [
+      17, 24, 29, 38, 54, 68, 81, 100, 126, 153, 190, 212, 241, 274,
+    ];
+
+    const copperCable380 = [
+      22, 31, 38, 50, 68, 85, 108, 130, 162, 200, 234, 275, 308, 355,
+    ];
+
+    // 380B утаснууд ...
+    const copperWire380 = [
+      earthType ? 20 : 25,
+      earthType ? 28 : 30,
+      earthType ? 34 : 40,
+      earthType ? 48 : 50,
+      earthType ? 64 : 75,
+      earthType ? 80 : 90,
+      earthType ? 100 : 115,
+      earthType ? 135 : 150,
+      earthType ? 165 : 185,
+      earthType ? 255 : 255,
+      earthType ? 260 : 260,
+      earthType ? 300 : 300,
+      earthType ? 346 : 346,
+      earthType ? 397 : 397,
+    ];
+
+    const aluminumWire380 = [
+      earthType ? 15 : 19,
+      earthType ? 22 : 23,
+      earthType ? 26 : 30,
+      earthType ? 38 : 39,
+      earthType ? 48 : 55,
+      earthType ? 65 : 70,
+      earthType ? 75 : 85,
+      earthType ? 105 : 120,
+      earthType ? 130 : 140,
+      earthType ? 175 : 175,
+      earthType ? 200 : 200,
+      212,
+      241,
+      274,
+    ];
+
+    // 220B кабель...
+    const aluminumCable220 = [
+      earthType ? 19 : 21,
+      earthType ? 27 : 29,
+      earthType ? 32 : 38,
+      earthType ? 42 : 55,
+      earthType ? 60 : 70,
+      earthType ? 75 : 90,
+      earthType ? 90 : 105,
+      earthType ? 110 : 135,
+      earthType ? 140 : 165,
+      earthType ? 170 : 200,
+      earthType ? 200 : 230,
+      earthType ? 235 : 270,
+    ];
+
+    const copperCable220 = [
+      earthType ? 25 : 27,
+      earthType ? 35 : 38,
+      earthType ? 42 : 50,
+      earthType ? 55 : 70,
+      earthType ? 75 : 90,
+      earthType ? 95 : 115,
+      earthType ? 120 : 140,
+      earthType ? 145 : 175,
+      earthType ? 180 : 215,
+      earthType ? 220 : 260,
+      earthType ? 300 : 260,
+      earthType ? 305 : 350,
+    ];
+
+    // 220B утас...
+    const aluminumWire220 = [
+      earthType ? 19 : 20,
+      28,
+      earthType ? 32 : 36,
+      earthType ? 47 : 50,
+      60,
+      earthType ? 80 : 85,
+      earthType ? 95 : 100,
+      earthType ? 130 : 140,
+      earthType ? 165 : 175,
+      earthType ? 200 : 215,
+      earthType ? 220 : 245,
+      earthType ? 255 : 275,
+    ];
+
+    const copperWire220 = [
+      earthType ? 25 : 27,
+      earthType ? 35 : 38,
+      earthType ? 42 : 46,
+      earthType ? 60 : 70,
+      earthType ? 80 : 85,
+      earthType ? 100 : 115,
+      earthType ? 125 : 135,
+      earthType ? 170 : 185,
+      earthType ? 210 : 225,
+      earthType ? 255 : 275,
+      earthType ? 290 : 315,
+      earthType ? 330 : 360,
+    ];
+
+    if (!onePhase) {
+      if (conductorType === "AC") arrCurrent = aluminumCable380;
+      else if (conductorType === "CC") arrCurrent = copperCable380;
+      else if (conductorType === "AW") arrCurrent = aluminumWire380;
+      else if (conductorType === "CW") arrCurrent = copperWire380;
+    } else {
+      if (conductorType === "AC") arrCurrent = aluminumCable220;
+      else if (conductorType === "CC") arrCurrent = copperCable220;
+      else if (conductorType === "AW") arrCurrent = aluminumWire220;
+      else if (conductorType === "CW") arrCurrent = copperWire220;
+    }
+
+    const index = getLargeValue(circuitBreakerCurrent, arrCurrent);
+
+    if (typeof index !== "string") {
+      const section = sectionTabs[index[1]];
+      return section;
+    } else
+      return "Хэт урт шугам, эсвэл хэт их ачаалалтайгаас хамаараад шаардлага хангах утгыг сонгох боломжгүй...";
+  };
+
   // Хүчдэлийн алдагдлаар хөндлөн огтлол сонгох...
   const sectionFromDrop: SectionFromDrop = (
     load,
@@ -318,158 +492,79 @@ export const CalcStore: FC = ({ children }) => {
     const huwaari = c * allowDrop;
     const real = hurtwer / huwaari;
 
-    const sectionDrop = getLargeValue(real, arrConductor);
+    const sectionDrop = getLargeValue(real, arrConductor)[0];
 
     return sectionDrop;
   };
 
-  // Автомат сонгох 220/380В ...
-  const circuitBreaker: CircuitBreaker = (current) => {
-    const circBreaker = [
-      16, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 355, 400, 500,
-      630, 800, 1000, 1600,
-    ];
-
-    const circuitBreakerCurrent = getLargeValue(current * 1.15, circBreaker);
-
-    return circuitBreakerCurrent;
+  // Халалт, хүчдэлийн алдагдлаас аль ихийг нь өгөх функц...
+  const upperSection: UpperSection = (heatSection, dropSection) => {
+    return heatSection > dropSection
+      ? [heatSection, "Халалтын нөхцлөөр сонгосон"]
+      : [dropSection, "Хүчдэлийн алдагдлаар сонгосон"];
   };
 
-  // Халалтын нөхцлөөр хөндлөн огтлол сонгох...
-  const conductor: Conductor = (
-    circuitBreakerCurrent,
-    conductorType,
-    earthType,
-    onePhase
+  // Хөндлөн огтлолыг string рүү хөрвүүлэх функц...
+  const stringifySection = (
+    section: number,
+    conductorType: string,
+    earthType: boolean,
+    onePhase: boolean
   ) => {
+    console.log("Хөндлөн огтлол, earthType, conductorType, onePhase");
     // 220B ...
-    const aluminumCable220 = [
-      {
-        section: 2.5,
-        text: earthType ? "3x2.5 мм.кв" : "2x2.5 мм.кв",
-        allowCurrent: earthType ? 19 : 21,
-      },
-      {
-        section: 4,
-        text: earthType ? "3x4 мм.кв" : "2x4 мм.кв",
-        allowCurrent: earthType ? 27 : 29,
-      },
-      {
-        section: 6,
-        text: earthType ? "3x6 мм.кв" : "2x6 мм.кв",
-        allowCurrent: earthType ? 32 : 38,
-      },
-      {
-        section: 10,
-        text: earthType ? "3x10 мм.кв" : "2x10 мм.кв",
-        allowCurrent: earthType ? 42 : 55,
-      },
-      {
-        section: 16,
-        text: earthType ? "3x16 мм.кв" : "2x16 мм.кв",
-        allowCurrent: earthType ? 60 : 70,
-      },
-      {
-        section: 25,
-        text: earthType ? "3x25 мм.кв" : "2x25 мм.кв",
-        allowCurrent: earthType ? 75 : 90,
-      },
-      {
-        section: 35,
-        text: earthType ? "3x35 мм.кв" : "2x35 мм.кв",
-        allowCurrent: earthType ? 90 : 105,
-      },
-      {
-        section: 50,
-        text: earthType ? "3x50 мм.кв" : "2x50 мм.кв",
-        allowCurrent: earthType ? 110 : 135,
-      },
-      {
-        section: 70,
-        text: earthType ? "3x70 мм.кв" : "2x70 мм.кв",
-        allowCurrent: earthType ? 140 : 165,
-      },
-      {
-        section: 95,
-        text: earthType ? "3x95 мм.кв" : "2x95 мм.кв",
-        allowCurrent: earthType ? 170 : 200,
-      },
-      {
-        section: 120,
-        text: earthType ? "3x120 мм.кв" : "2x120 мм.кв",
-        allowCurrent: earthType ? 200 : 230,
-      },
-      {
-        section: 150,
-        text: earthType ? "3x150 мм.кв" : "2x150 мм.кв",
-        allowCurrent: earthType ? 235 : 270,
-      },
-    ];
-
-    const aluminumWire220 = [
+    const wire220 = [
       {
         section: 2.5,
         text: earthType ? "3x(1x2.5) мм.кв" : "2x(1x2.5) мм.кв",
-        allowCurrent: earthType ? 19 : 20,
       },
       {
         section: 4,
         text: earthType ? "3x(1x4) мм.кв" : "2x(1x4) мм.кв",
-        allowCurrent: 28,
       },
       {
         section: 6,
         text: earthType ? "3x(1x6) мм.кв" : "2x(1x6) мм.кв",
-        allowCurrent: earthType ? 32 : 36,
       },
       {
         section: 10,
         text: earthType ? "3x(1x10) мм.кв" : "2x(1x10) мм.кв",
-        allowCurrent: earthType ? 47 : 50,
       },
       {
         section: 16,
         text: earthType ? "3x(1x16) мм.кв" : "2x(1x16) мм.кв",
-        allowCurrent: 60,
       },
       {
         section: 25,
         text: earthType ? "3x(1x25) мм.кв" : "2x(1x25) мм.кв",
-        allowCurrent: earthType ? 80 : 85,
       },
       {
         section: 35,
         text: earthType ? "3x(1x35) мм.кв" : "2x(1x35) мм.кв",
-        allowCurrent: earthType ? 95 : 100,
       },
       {
         section: 50,
         text: earthType ? "3x(1x50) мм.кв" : "2x(1x50) мм.кв",
-        allowCurrent: earthType ? 130 : 140,
       },
       {
         section: 70,
         text: earthType ? "3x(1x70) мм.кв" : "2x(1x70) мм.кв",
-        allowCurrent: earthType ? 165 : 175,
       },
       {
         section: 95,
         text: earthType ? "3x(1x95) мм.кв" : "2x(1x95) мм.кв",
-        allowCurrent: earthType ? 200 : 215,
       },
       {
         section: 120,
         text: earthType ? "3x(1x120) мм.кв" : "2x(1x120) мм.кв",
-        allowCurrent: earthType ? 220 : 245,
       },
       {
         section: 150,
         text: earthType ? "3x(1x150) мм.кв" : "2x(1x150) мм.кв",
-        allowCurrent: earthType ? 255 : 275,
       },
     ];
 
-    const copperCable220 = [
+    const cable220 = [
       {
         section: 2.5,
         text: earthType ? "3x2.5 мм.кв" : "2x2.5 мм.кв",
@@ -532,71 +627,8 @@ export const CalcStore: FC = ({ children }) => {
       },
     ];
 
-    const copperWire220 = [
-      {
-        section: 2.5,
-        text: earthType ? "3x(1x2.5) мм.кв" : "2x(1x2.5) мм.кв",
-        allowCurrent: earthType ? 25 : 27,
-      },
-      {
-        section: 4,
-        text: earthType ? "3x(1x4) мм.кв" : "2x(1x4) мм.кв",
-        allowCurrent: earthType ? 35 : 38,
-      },
-      {
-        section: 6,
-        text: earthType ? "3x(1x6) мм.кв" : "2x(1x6) мм.кв",
-        allowCurrent: earthType ? 42 : 46,
-      },
-      {
-        section: 10,
-        text: earthType ? "3x(1x10) мм.кв" : "2x(1x10) мм.кв",
-        allowCurrent: earthType ? 60 : 70,
-      },
-      {
-        section: 16,
-        text: earthType ? "3x(1x16) мм.кв" : "2x(1x16) мм.кв",
-        allowCurrent: earthType ? 80 : 85,
-      },
-      {
-        section: 25,
-        text: earthType ? "3x(1x25) мм.кв" : "2x(1x25) мм.кв",
-        allowCurrent: earthType ? 100 : 115,
-      },
-      {
-        section: 35,
-        text: earthType ? "3x(1x35) мм.кв" : "2x(1x35) мм.кв",
-        allowCurrent: earthType ? 125 : 135,
-      },
-      {
-        section: 50,
-        text: earthType ? "3x(1x50) мм.кв" : "2x(1x50) мм.кв",
-        allowCurrent: earthType ? 170 : 185,
-      },
-      {
-        section: 70,
-        text: earthType ? "3x(1x70) мм.кв" : "2x(1x70) мм.кв",
-        allowCurrent: earthType ? 210 : 225,
-      },
-      {
-        section: 95,
-        text: earthType ? "3x(1x95) мм.кв" : "2x(1x95) мм.кв",
-        allowCurrent: earthType ? 255 : 275,
-      },
-      {
-        section: 120,
-        text: earthType ? "3x(1x120) мм.кв" : "2x(1x120) мм.кв",
-        allowCurrent: earthType ? 290 : 315,
-      },
-      {
-        section: 150,
-        text: earthType ? "3x(1x150) мм.кв" : "2x(1x150) мм.кв",
-        allowCurrent: earthType ? 330 : 360,
-      },
-    ];
-
     // 380B ...
-    const aluminumCable380 = [
+    const cable380 = [
       {
         section: 2.5,
         text: earthType ? "5x2.5 мм.кв" : "4x2.5 мм.кв",
@@ -669,80 +701,7 @@ export const CalcStore: FC = ({ children }) => {
       },
     ];
 
-    const copperCable380 = [
-      {
-        section: 2.5,
-        text: earthType ? "5x2.5 мм.кв" : "4x2.5 мм.кв",
-        allowCurrent: earthType ? 22 : 22,
-      },
-      {
-        section: 4,
-        text: earthType ? "5x4 мм.кв" : "4x4 мм.кв",
-        allowCurrent: earthType ? 31 : 31,
-      },
-      {
-        section: 6,
-        text: earthType ? "5x6 мм.кв" : "4x6 мм.кв",
-        allowCurrent: earthType ? 38 : 38,
-      },
-      {
-        section: 10,
-        text: earthType ? "5x10 мм.кв" : "4x10 мм.кв",
-        allowCurrent: earthType ? 50 : 50,
-      },
-      {
-        section: 16,
-        text: earthType ? "5x16 мм.кв" : "4x16 мм.кв",
-        allowCurrent: earthType ? 68 : 68,
-      },
-      {
-        section: 25,
-        text: earthType ? "4x25+1x16 мм.кв" : "3x25+1x16 мм.кв",
-        allowCurrent: earthType ? 85 : 85,
-      },
-      {
-        section: 35,
-        text: earthType ? "4x35+1x25 мм.кв" : "3x35+1x25 мм.кв",
-        allowCurrent: earthType ? 108 : 108,
-      },
-      {
-        section: 50,
-        text: earthType ? "4x50+1x25 мм.кв" : "3x50+1x25 мм.кв",
-        allowCurrent: earthType ? 130 : 130,
-      },
-      {
-        section: 70,
-        text: earthType ? "4x70+1x35 мм.кв" : "3x70+1x35 мм.кв",
-        allowCurrent: earthType ? 162 : 162,
-      },
-      {
-        section: 95,
-        text: earthType ? "4x95+1x50 мм.кв" : "3x95+1x50 мм.кв",
-        allowCurrent: earthType ? 200 : 200,
-      },
-      {
-        section: 120,
-        text: earthType ? "4x120+1x70 мм.кв" : "3x120+1x70 мм.кв",
-        allowCurrent: earthType ? 234 : 234,
-      },
-      {
-        section: 150,
-        text: earthType ? "4x150+1x95 мм.кв" : "3x150+1x95 мм.кв",
-        allowCurrent: earthType ? 275 : 275,
-      },
-      {
-        section: 185,
-        text: earthType ? "4x185+1x95 мм.кв" : "3x185+1x95 мм.кв",
-        allowCurrent: earthType ? 308 : 308,
-      },
-      {
-        section: 240,
-        text: earthType ? "4x240+1x120 мм.кв" : "3x240+1x120 мм.кв",
-        allowCurrent: earthType ? 355 : 355,
-      },
-    ];
-
-    const aluminumWire380 = [
+    const wire380 = [
       {
         section: 2.5,
         text: earthType ? "5x(1x2.5) мм.кв" : "4x(1x2.5) мм.кв",
@@ -799,135 +758,6 @@ export const CalcStore: FC = ({ children }) => {
         allowCurrent: earthType ? 200 : 200,
       },
     ];
-
-    const copperWire380 = [
-      {
-        section: 2.5,
-        text: earthType ? "5x(1x2.5) мм.кв" : "4x(1x2.5) мм.кв",
-        allowCurrent: earthType ? 20 : 25,
-      },
-      {
-        section: 4,
-        text: earthType ? "5x(1x4) мм.кв" : "4x(1x4) мм.кв",
-        allowCurrent: earthType ? 28 : 30,
-      },
-      {
-        section: 6,
-        text: earthType ? "5x(1x6) мм.кв" : "4x(1x6) мм.кв",
-        allowCurrent: earthType ? 34 : 40,
-      },
-      {
-        section: 10,
-        text: earthType ? "5x(1x10) мм.кв" : "4x(1x10) мм.кв",
-        allowCurrent: earthType ? 48 : 50,
-      },
-      {
-        section: 16,
-        text: earthType ? "5x(1x16) мм.кв" : "4x(1x16) мм.кв",
-        allowCurrent: earthType ? 64 : 75,
-      },
-      {
-        section: 25,
-        text: earthType ? "4x(1x25)+(1x16) мм.кв" : "3x(1x25)+(1x16) мм.кв",
-        allowCurrent: earthType ? 80 : 90,
-      },
-      {
-        section: 35,
-        text: earthType ? "4x(1x35)+(1x25) мм.кв" : "3x(1x35)+(1x25) мм.кв",
-        allowCurrent: earthType ? 100 : 115,
-      },
-      {
-        section: 50,
-        text: earthType ? "4x(1x50)+(1x25) мм.кв" : "3x(1x50)+(1x25) мм.кв",
-        allowCurrent: earthType ? 135 : 150,
-      },
-      {
-        section: 70,
-        text: earthType ? "4x(1x70)+(1x35) мм.кв" : "3x(1x70)+(1x35) мм.кв",
-        allowCurrent: earthType ? 165 : 185,
-      },
-      {
-        section: 95,
-        text: earthType ? "4x(1x95)+(1x50) мм.кв" : "3x(1x95)+(1x50) мм.кв",
-        allowCurrent: earthType ? 255 : 255,
-      },
-      {
-        section: 120,
-        text: earthType ? "4x(1x120)+(1x70) мм.кв" : "3x(1x120)+(1x70) мм.кв",
-        allowCurrent: earthType ? 260 : 260,
-      },
-      {
-        section: 150,
-        text: earthType ? "4x(1x150)+(1x95) мм.кв" : "3x(1x150)+(1x95) мм.кв",
-        allowCurrent: earthType ? 300 : 300,
-      },
-      {
-        section: 185,
-        text: earthType ? "4x(1x185)+(1x95) мм.кв" : "3x(1x185)+(1x95) мм.кв",
-        allowCurrent: earthType ? 346 : 346,
-      },
-      {
-        section: 240,
-        text: earthType ? "4x(1x240)+(1x120) мм.кв" : "3x(1x240)+(1x120) мм.кв",
-        allowCurrent: earthType ? 397 : 397,
-      },
-    ];
-
-    const objArr = (
-      currentCB: number,
-      arr: { section: number; text: string; allowCurrent: number }[]
-    ) => {
-      for (const e of arr) {
-        if (e.allowCurrent < currentCB) continue;
-        return e;
-      }
-    };
-
-    const type = () => {
-      if (onePhase) {
-        if (conductorType === "AC")
-          return objArr(circuitBreakerCurrent, aluminumCable220);
-        if (conductorType === "AW")
-          return objArr(circuitBreakerCurrent, aluminumWire220);
-        if (conductorType === "CC")
-          return objArr(circuitBreakerCurrent, copperCable220);
-        if (conductorType === "CW")
-          return objArr(circuitBreakerCurrent, copperWire220);
-      } else {
-        if (conductorType === "AC")
-          return objArr(circuitBreakerCurrent, aluminumCable380);
-        if (conductorType === "AW")
-          return objArr(circuitBreakerCurrent, aluminumWire380);
-        if (conductorType === "CC")
-          return objArr(circuitBreakerCurrent, copperCable380);
-        if (conductorType === "CW")
-          return objArr(circuitBreakerCurrent, copperWire380);
-      }
-    };
-
-    const sectionObj = type();
-
-    return sectionObj
-      ? [sectionObj.text, sectionObj.section]
-      : "Нэг хэлхээгээр дамжуулахад ачаалал харьцангуй их байгаа тул, ачааллыг хоёр хувааж дамжуулахаар төлөвлөх нь илүү тохиромжтой!";
-  };
-
-  // Сантехникийн ачааг cosф-д тааруулж ангилах функц...
-  const classifyPlumbLoad: ClassifyPlumbLoad = (loads: number[]) => {
-    const lessOne = loads.filter((el) => el < 1);
-    const oneToFour = loads.filter((el) => el >= 1 && el <= 4);
-    const moreThanFour = loads.filter((el) => el > 4);
-
-    return { lessOne, oneToFour, moreThanFour };
-  };
-
-  // Контакторын гүйдэл тооцох...
-  const contactorRelay: Contactor = (current) => {
-    const contactorTable = [
-      9, 12, 18, 25, 32, 40, 50, 65, 80, 95, 115, 150, 185, 225, 265, 330,
-    ];
-    const contactor = getLargeValue(current, contactorTable);
-    return contactor;
   };
 
   // ########################### ТУСЛАХ ФУНКЦУУД  ################################
@@ -941,9 +771,28 @@ export const CalcStore: FC = ({ children }) => {
       break;
     }
 
-    return largeValue !== 0
-      ? largeValue
+    const i = largeValue !== 0 ? arr.indexOf(largeValue) : 0;
+
+    return largeValue !== 0 || i !== -1
+      ? [largeValue, i]
       : "Хэт урт шугам, эсвэл хэт их ачаалалтайгаас хамаараад шаардлага хангах утгыг сонгох боломжгүй...";
+  };
+
+  // ТАБЛИЦТАЙ ТЭНЦҮҮЛЖ АВАХ ФУНКЦ ...
+  const getEqualValue: GetLargeValue = (value, arr) => {
+    let equalValue = 0;
+
+    for (const e of arr) {
+      if (e !== value) continue;
+      equalValue = e;
+      break;
+    }
+
+    const i = equalValue !== 0 ? arr.indexOf(equalValue) : 0;
+
+    return equalValue !== 0 || i !== -1
+      ? [equalValue, i]
+      : "Та өгөгдлөө шалгана уу!";
   };
 
   // Интерполяц хийх утга буцаадаг функц...

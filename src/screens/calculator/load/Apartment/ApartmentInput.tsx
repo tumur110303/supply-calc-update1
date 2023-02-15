@@ -350,16 +350,12 @@ const ApartmentInput: FC = () => {
       const circuitBreaker = calcContext.circuitBreaker(current);
       const circuitBreakerFire = calcContext.circuitBreaker(currentFire);
 
-      const section = calcContext.conductor(
-        typeof circuitBreaker === "number" ? circuitBreaker : 2000,
-        value.cable ? value.cable : "AC",
-        value.earthSystem
-      )[0];
-      const sectionFire = calcContext.conductor(
-        typeof circuitBreakerFire === "number" ? circuitBreakerFire : 2000,
-        "CC",
-        value.earthSystem
-      )[0];
+      // ################### !!!!!!!!!!!!!!!!!!!!!!
+      const section = "string авна шүү...";
+      // ##################### !!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // ################### !!!!!!!!!!!!!!!!!!!!!!
+      const sectionFire = "string авна шүү...";
+      // ##################### !!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       setResult([
         power,

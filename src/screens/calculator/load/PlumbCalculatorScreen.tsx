@@ -222,11 +222,9 @@ const PlumbCalculatorScreen: FC = () => {
       const powerFactor = typeof pf === "number" ? pf : 0.8;
       const current = calcContext.currentThreePhase(power, powerFactor);
       const circuitBreaker = calcContext.circuitBreaker(current);
-      const section = calcContext.conductor(
-        typeof circuitBreaker === "number" ? circuitBreaker : 2000,
-        value.cable,
-        value.earthSystem
-      )[0];
+      // ################### !!!!!!!!!!!!!!!!!!!!!!
+      const section = "string авна шүү...";
+      // ##################### !!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       // result...
       setResult([power, current, powerFactor, circuitBreaker, section]);
