@@ -467,10 +467,10 @@ export const CalcStore: FC = ({ children }) => {
       else if (conductorType === "CW") arrCurrent = copperWire220;
     }
 
-    const index = getLargeValue(circuitBreakerCurrent, arrCurrent);
+    const index = getLargeValue(circuitBreakerCurrent, arrCurrent)[1];
 
     if (typeof index !== "string") {
-      const section = sectionTabs[index[1]];
+      const section = sectionTabs[index];
       return section;
     } else
       return "Хэт урт шугам, эсвэл хэт их ачаалалтайгаас хамаараад шаардлага хангах утгыг сонгох боломжгүй...";
@@ -511,7 +511,6 @@ export const CalcStore: FC = ({ children }) => {
     earthType: boolean,
     onePhase: boolean
   ) => {
-    console.log("Хөндлөн огтлол, earthType, conductorType, onePhase");
     // 220B ...
     const wire220 = [
       {
@@ -568,62 +567,50 @@ export const CalcStore: FC = ({ children }) => {
       {
         section: 2.5,
         text: earthType ? "3x2.5 мм.кв" : "2x2.5 мм.кв",
-        allowCurrent: earthType ? 25 : 27,
       },
       {
         section: 4,
         text: earthType ? "3x4 мм.кв" : "2x4 мм.кв",
-        allowCurrent: earthType ? 35 : 38,
       },
       {
         section: 6,
         text: earthType ? "3x6 мм.кв" : "2x6 мм.кв",
-        allowCurrent: earthType ? 42 : 50,
       },
       {
         section: 10,
         text: earthType ? "3x10 мм.кв" : "2x10 мм.кв",
-        allowCurrent: earthType ? 55 : 70,
       },
       {
         section: 16,
         text: earthType ? "3x16 мм.кв" : "2x16 мм.кв",
-        allowCurrent: earthType ? 75 : 90,
       },
       {
         section: 25,
         text: earthType ? "3x25 мм.кв" : "2x25 мм.кв",
-        allowCurrent: earthType ? 95 : 115,
       },
       {
         section: 35,
         text: earthType ? "3x35 мм.кв" : "2x35 мм.кв",
-        allowCurrent: earthType ? 120 : 140,
       },
       {
         section: 50,
         text: earthType ? "3x50 мм.кв" : "2x50 мм.кв",
-        allowCurrent: earthType ? 145 : 175,
       },
       {
         section: 70,
         text: earthType ? "3x70 мм.кв" : "2x70 мм.кв",
-        allowCurrent: earthType ? 180 : 215,
       },
       {
         section: 95,
         text: earthType ? "3x95 мм.кв" : "2x95 мм.кв",
-        allowCurrent: earthType ? 220 : 260,
       },
       {
         section: 120,
         text: earthType ? "3x120 мм.кв" : "2x120 мм.кв",
-        allowCurrent: earthType ? 300 : 260,
       },
       {
         section: 150,
         text: earthType ? "3x150 мм.кв" : "2x150 мм.кв",
-        allowCurrent: earthType ? 305 : 350,
       },
     ];
 
@@ -632,72 +619,58 @@ export const CalcStore: FC = ({ children }) => {
       {
         section: 2.5,
         text: earthType ? "5x2.5 мм.кв" : "4x2.5 мм.кв",
-        allowCurrent: earthType ? 17 : 17,
       },
       {
         section: 4,
         text: earthType ? "5x4 мм.кв" : "4x4 мм.кв",
-        allowCurrent: earthType ? 24 : 24,
       },
       {
         section: 6,
         text: earthType ? "5x6 мм.кв" : "4x6 мм.кв",
-        allowCurrent: earthType ? 29 : 29,
       },
       {
         section: 10,
         text: earthType ? "5x10 мм.кв" : "4x10 мм.кв",
-        allowCurrent: earthType ? 38 : 38,
       },
       {
         section: 16,
         text: earthType ? "5x16 мм.кв" : "4x16 мм.кв",
-        allowCurrent: earthType ? 54 : 54,
       },
       {
         section: 25,
         text: earthType ? "4x25+1x16 мм.кв" : "3x25+1x16 мм.кв",
-        allowCurrent: earthType ? 68 : 68,
       },
       {
         section: 35,
         text: earthType ? "4x35+1x25 мм.кв" : "3x35+1x25 мм.кв",
-        allowCurrent: earthType ? 81 : 81,
       },
       {
         section: 50,
         text: earthType ? "4x50+1x25 мм.кв" : "3x50+1x25 мм.кв",
-        allowCurrent: earthType ? 100 : 100,
       },
       {
         section: 70,
         text: earthType ? "4x70+1x35 мм.кв" : "3x70+1x35 мм.кв",
-        allowCurrent: earthType ? 126 : 126,
       },
       {
         section: 95,
         text: earthType ? "4x95+1x50 мм.кв" : "3x95+1x50 мм.кв",
-        allowCurrent: earthType ? 153 : 153,
       },
       {
         section: 120,
         text: earthType ? "4x120+1x70 мм.кв" : "3x120+1x70 мм.кв",
-        allowCurrent: earthType ? 190 : 190,
       },
       {
         section: 150,
         text: earthType ? "4x150+1x95 мм.кв" : "3x150+1x95 мм.кв",
-        allowCurrent: earthType ? 212 : 212,
       },
       {
         section: 185,
         text: earthType ? "4x185+1x95 мм.кв" : "3x185+1x95 мм.кв",
-        allowCurrent: earthType ? 241 : 241,
       },
       {
         section: 240,
         text: earthType ? "4x240+1x120 мм.кв" : "3x240+1x120 мм.кв",
-        allowCurrent: earthType ? 274 : 274,
       },
     ];
 
@@ -705,57 +678,58 @@ export const CalcStore: FC = ({ children }) => {
       {
         section: 2.5,
         text: earthType ? "5x(1x2.5) мм.кв" : "4x(1x2.5) мм.кв",
-        allowCurrent: earthType ? 15 : 19,
       },
       {
         section: 4,
         text: earthType ? "5x(1x4) мм.кв" : "4x(1x4) мм.кв",
-        allowCurrent: earthType ? 22 : 23,
       },
       {
         section: 6,
         text: earthType ? "5x(1x6) мм.кв" : "4x(1x6) мм.кв",
-        allowCurrent: earthType ? 26 : 30,
       },
       {
         section: 10,
         text: earthType ? "5x(1x10) мм.кв" : "4x(1x10) мм.кв",
-        allowCurrent: earthType ? 38 : 39,
       },
       {
         section: 16,
         text: earthType ? "5x(1x16) мм.кв" : "4x(1x16) мм.кв",
-        allowCurrent: earthType ? 48 : 55,
       },
       {
         section: 25,
         text: earthType ? "4x(1x25)+(1x16) мм.кв" : "3x(1x25)+(1x16) мм.кв",
-        allowCurrent: earthType ? 65 : 70,
       },
       {
         section: 35,
         text: earthType ? "4x(1x35)+(1x25) мм.кв" : "3x(1x35)+(1x25) мм.кв",
-        allowCurrent: earthType ? 75 : 85,
       },
       {
         section: 50,
         text: earthType ? "4x(1x50)+(1x25) мм.кв" : "3x(1x50)+(1x25) мм.кв",
-        allowCurrent: earthType ? 105 : 120,
       },
       {
         section: 70,
         text: earthType ? "4x(1x70)+(1x35) мм.кв" : "3x(1x70)+(1x35) мм.кв",
-        allowCurrent: earthType ? 130 : 140,
       },
       {
         section: 95,
         text: earthType ? "4x(1x95)+(1x50) мм.кв" : "3x(1x95)+(1x50) мм.кв",
-        allowCurrent: earthType ? 175 : 175,
       },
       {
         section: 120,
         text: earthType ? "4x(1x120)+(1x70) мм.кв" : "3x(1x120)+(1x70) мм.кв",
-        allowCurrent: earthType ? 200 : 200,
+      },
+      {
+        section: 150,
+        text: earthType ? "4x(1x150)+(1x95) мм.кв" : "3x(1x150)+(1x95) мм.кв",
+      },
+      {
+        section: 185,
+        text: earthType ? "4x(1x185)+(1x95) мм.кв" : "3x(1x185)+(1x95) мм.кв",
+      },
+      {
+        section: 240,
+        text: earthType ? "4x(1x240)+(1x120) мм.кв" : "3x(1x240)+(1x120) мм.кв",
       },
     ];
   };
@@ -771,7 +745,7 @@ export const CalcStore: FC = ({ children }) => {
       break;
     }
 
-    const i = largeValue !== 0 ? arr.indexOf(largeValue) : 0;
+    const i = largeValue !== 0 ? arr.indexOf(largeValue) : -1;
 
     return largeValue !== 0 || i !== -1
       ? [largeValue, i]
@@ -788,7 +762,7 @@ export const CalcStore: FC = ({ children }) => {
       break;
     }
 
-    const i = equalValue !== 0 ? arr.indexOf(equalValue) : 0;
+    const i = equalValue !== 0 ? arr.indexOf(equalValue) : -1;
 
     return equalValue !== 0 || i !== -1
       ? [equalValue, i]
