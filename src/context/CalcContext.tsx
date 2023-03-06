@@ -46,7 +46,7 @@ type Conductor = (
   earthType?: boolean,
   onePhase?: boolean
 ) => number | string;
-type GetLargeValue = (value: number, arr: number[]) => number[] | string;
+type GetLargeValue = (value: number, arr: number[]) => number[];
 type ApartmentCalc = (numberApartment: number) => number;
 type ClassifyPlumbLoad = (loads: number[]) => object;
 type CurrentThreePhase = (
@@ -111,29 +111,14 @@ export const CalcStore: FC = ({ children }) => {
       4000, 6300, 10000, 16000, 25000, 40000,
     ];
 
-    const transformerPower = (arr: number[]) => {
-      if (transformerNumber === 1) {
-        for (let e of arr) {
-          if (e < capacity) continue;
+    const tpPower = getLargeValue(capacity, powerTableTp)[0];
 
-          return e;
-        }
-      } else if (transformerNumber === 2) {
-        const calcCapacity = capacity / 1.4;
+    const stringValue =
+      tpPower !== -1
+        ? `${transformerNumber}x${tpPower} кВА чадалтай дэд станц`
+        : "Sн=40МВА-аас илүү чадалтай дэд станц";
 
-        for (let e of arr) {
-          if (e < calcCapacity) continue;
-
-          return e;
-        }
-      }
-    };
-
-    const tpPower = transformerPower(powerTableTp);
-
-    const butsaahUtgaString = `${transformerNumber}x${tpPower} кВА 6(10)/0.4кВ-ын дэд станц`;
-
-    return butsaahUtgaString;
+    return stringValue;
   };
 
   // Сууцны ачаалал тодорхойлох функц ...
@@ -747,9 +732,7 @@ export const CalcStore: FC = ({ children }) => {
 
     const i = largeValue !== 0 ? arr.indexOf(largeValue) : -1;
 
-    return largeValue !== 0 || i !== -1
-      ? [largeValue, i]
-      : "Хэт урт шугам, эсвэл хэт их ачаалалтайгаас хамаараад шаардлага хангах утгыг сонгох боломжгүй...";
+    return largeValue === 0 || i === -1 ? [-1, -1] : [largeValue, i];
   };
 
   // ТАБЛИЦТАЙ ТЭНЦҮҮЛЖ АВАХ ФУНКЦ ...
@@ -764,9 +747,7 @@ export const CalcStore: FC = ({ children }) => {
 
     const i = equalValue !== 0 ? arr.indexOf(equalValue) : -1;
 
-    return equalValue !== 0 || i !== -1
-      ? [equalValue, i]
-      : "Та өгөгдлөө шалгана уу!";
+    return equalValue === 0 || i === -1 ? [equalValue, i] : [-1, -1];
   };
 
   // Интерполяц хийх утга буцаадаг функц...
