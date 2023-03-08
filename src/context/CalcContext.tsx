@@ -19,7 +19,7 @@ const CalcContext = createContext<{
 
 type EquilentPowerFactor = (loads: number[], pfs: number[]) => number | string;
 
-type PtbCalc = (capacity: number, transformerNumber: number) => string;
+type PtbCalc = (capacity: number, transformerNumber: 1 | 2) => string;
 
 type CalcPlumb = (quantity: number, load: number) => number;
 type Interpolation = (
@@ -104,14 +104,17 @@ export const CalcStore: FC = ({ children }) => {
   ];
 
   // ##########################  ТООЦООНЫ ФУНКЦУУД ... ###############################
-  // Дэд станц сонгох...
-  const ptbCalc = (capacity: number, transformerNumber: number) => {
+  // 01. Дэд станц сонгох...
+  const ptbCalc = (capacity: number, transformerNumber: 1 | 2) => {
     const powerTableTp = [
       25, 40, 63, 100, 160, 250, 320, 400, 500, 630, 800, 1000, 1600, 2500,
       4000, 6300, 10000, 16000, 25000, 40000,
     ];
 
-    const tpPower = getLargeValue(capacity, powerTableTp)[0];
+    const tpPower = getLargeValue(
+      transformerNumber === 1 ? capacity : capacity / 1.4,
+      powerTableTp
+    )[0];
 
     const stringValue =
       tpPower !== -1
@@ -121,7 +124,7 @@ export const CalcStore: FC = ({ children }) => {
     return stringValue;
   };
 
-  // Сууцны ачаалал тодорхойлох функц ...
+  // 02. Сууцны ачаалал тодорхойлох функц ...
   const apartmentCalc = (numberApartment: number) => {
     const privLoad = interpolation(
       numberApartment,

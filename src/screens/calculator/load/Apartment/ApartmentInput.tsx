@@ -377,6 +377,13 @@ const ApartmentInput: FC = () => {
     await increase();
   };
 
+  const experiment = () => {
+    if (calcContext) {
+      const ptbcalcaas = calcContext.ptbCalc(1113, 2);
+      console.log("Хэвлэв : ", ptbcalcaas);
+    }
+  };
+
   return (
     <ScrollView style={css.container}>
       <Modal
@@ -654,50 +661,6 @@ const ApartmentInput: FC = () => {
       />
       <OnOffSwitch
         onValueChange={() => {
-          setHave((state) => {
-            const copy = { ...state };
-            copy.pump = !copy.pump;
-            return copy;
-          });
-        }}
-        value={have.pump}
-        label="Усны болон халаалтын насос"
-      />
-      <OnOffSwitch
-        onValueChange={() => {
-          setHave((state) => {
-            const copy = { ...state };
-            copy.fan = !copy.fan;
-            return copy;
-          });
-        }}
-        value={have.fan}
-        label="Агааржуулах төхөөрөмжүүд"
-      />
-      <OnOffSwitch
-        onValueChange={() => {
-          setHave((state) => {
-            const copy = { ...state };
-            copy.heater = !copy.heater;
-            return copy;
-          });
-        }}
-        value={have.heater}
-        label="Агаар халаагч, агаарын дулаан хөшиг"
-      />
-      <OnOffSwitch
-        onValueChange={() => {
-          setHave((state) => {
-            const copy = { ...state };
-            copy.lift = !copy.lift;
-            return copy;
-          });
-        }}
-        value={have.lift}
-        label="Лифт"
-      />
-      <OnOffSwitch
-        onValueChange={() => {
           setValue((state) => {
             const copy = { ...state };
             copy.earthSystem = !copy.earthSystem;
@@ -715,6 +678,7 @@ const ApartmentInput: FC = () => {
           Хүчний төхөөрөмжийн өгөгдөл
         </Text>
       ) : null}
+
       {have.fire ? (
         <Textfield
           label="Галын үед ажиллах сэнс, насосууд"
@@ -846,9 +810,7 @@ const ApartmentInput: FC = () => {
           }}
         />
       ) : null}
-      <Button disable={disabled} onPress={calc}>
-        Тооцоолох
-      </Button>
+      <Button onPress={experiment}>Тооцоолох</Button>
       <View style={{ marginBottom: 20 }}></View>
     </ScrollView>
   );
