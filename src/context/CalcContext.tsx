@@ -107,12 +107,12 @@ export const CalcStore: FC = ({ children }) => {
   // 01. Дэд станц сонгох...
   const ptbCalc = (capacity: number, transformerNumber: 1 | 2) => {
     const powerTableTp = [
-      25, 40, 63, 100, 160, 250, 320, 400, 500, 630, 800, 1000, 1600, 2500,
+      10, 25, 40, 63, 100, 160, 250, 320, 400, 500, 630, 800, 1000, 1600, 2500,
       4000, 6300, 10000, 16000, 25000, 40000,
     ];
 
     const tpPower = getLargeValue(
-      transformerNumber === 1 ? capacity : capacity / 1.4,
+      transformerNumber === 1 ? Math.abs(capacity) : Math.abs(capacity) / 1.4,
       powerTableTp
     )[0];
 
@@ -121,36 +121,36 @@ export const CalcStore: FC = ({ children }) => {
         ? `${transformerNumber}x${tpPower} кВА чадалтай дэд станц`
         : "Sн=40МВА-аас илүү чадалтай дэд станц";
 
-    return stringValue;
+    return capacity === 0 ? "Өгөгдлөө гүйцэд оруулна уу!" : stringValue;
   };
 
   // 02. Сууцны ачаалал тодорхойлох функц ...
   const apartmentCalc = (numberApartment: number) => {
     const privLoad = interpolation(
-      numberApartment,
+      Math.abs(numberApartment),
       numberTabAppartment,
       privLoadTab
     );
-    const apartmentLoad = numberApartment * privLoad;
-    return apartmentLoad;
+    const apartmentLoad = Math.abs(numberApartment) * privLoad;
+    return numberApartment === 0 ? -1 : apartmentLoad;
   };
 
-  // Сангийн ачаалал тодорхойлох функц...
+  // 03. Сангийн ачаалал тодорхойлох функц...
   const calcPlumb = (quantity: number, totalLoad: number) => {
     let coeff: number = 0;
-    if (quantity == 3) coeff = 0.9;
-    else if (quantity == 200) coeff = 0.5;
+    if (quantity === 3) coeff = 0.9;
+    else if (quantity === 200) coeff = 0.5;
     if (quantity > 3 && quantity < 200)
       coeff = interpolation(quantity, numberTabPlumb, coefficientPlumbTab);
     if (quantity < 3) coeff = 1;
     if (quantity > 200) coeff = 0.5;
 
-    const plumbLoad = totalLoad * coeff;
+    const plumbLoad = Math.abs(totalLoad) * coeff;
 
-    return plumbLoad;
+    return quantity <= 0 || totalLoad === 0 ? -1 : plumbLoad;
   };
 
-  // Лифтний ачаалал тодорхойлох функцууд...
+  // 04. Лифтний ачаалал тодорхойлох функцууд...
   const elevatorCalc = (
     quantity: number,
     totalLoad: number,
@@ -216,7 +216,7 @@ export const CalcStore: FC = ({ children }) => {
     return elevatorLoad;
   };
 
-  // Дундаж чадлын коэффициент...
+  // 05. Дундаж чадлын коэффициент...
   const equilentPowerFactor: EquilentPowerFactor = (loads, pf) => {
     if (loads.length !== pf.length)
       return "Уучлаарай. Та өгөгдлөө гүйцэд оруулна уу!";
@@ -236,7 +236,7 @@ export const CalcStore: FC = ({ children }) => {
 
   // #########################  Засвартай...   #####################
 
-  // Гүйдэл тооцох 220B ...
+  // 06. Гүйдэл тооцох 220B ...
   const currentOnePhase: CurrentOnePhase = (load, powerFactor, mainUnit) => {
     let huwaari = 0;
     let current = 0;
@@ -251,7 +251,7 @@ export const CalcStore: FC = ({ children }) => {
     return current;
   };
 
-  // Гүйдэл тооцох 380B ...
+  // 07. Гүйдэл тооцох 380B ...
   const currentThreePhase: CurrentThreePhase = (
     load,
     powerFactor,
@@ -282,7 +282,7 @@ export const CalcStore: FC = ({ children }) => {
     return current;
   };
 
-  // Хүчдэлийн алдагдал тооцох 380В...
+  // 08. Хүчдэлийн алдагдал тооцох 380В...
   const voltageDrop: VoltageDrop = (
     load,
     length,
@@ -298,7 +298,7 @@ export const CalcStore: FC = ({ children }) => {
     return drop;
   };
 
-  // Автомат сонгох 220/380В ...
+  // 09. Автомат сонгох 220/380В ...
   const circuitBreaker: CircuitBreaker = (current) => {
     const circBreaker = [
       16, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 355, 400, 500,
@@ -310,7 +310,7 @@ export const CalcStore: FC = ({ children }) => {
     return circuitBreakerCurrent;
   };
 
-  // Сантехникийн ачааг cosф-д тааруулж ангилах функц...
+  // 10. Сантехникийн ачааг cosф-д тааруулж ангилах функц...
   const classifyPlumbLoad: ClassifyPlumbLoad = (loads: number[]) => {
     const lessOne = loads.filter((el) => el < 1);
     const oneToFour = loads.filter((el) => el >= 1 && el <= 4);
@@ -319,7 +319,7 @@ export const CalcStore: FC = ({ children }) => {
     return { lessOne, oneToFour, moreThanFour };
   };
 
-  // Контакторын гүйдэл тооцох...
+  // 11. Контакторын гүйдэл тооцох...
   const contactorRelay: Contactor = (current) => {
     const contactorTable = [
       9, 12, 18, 25, 32, 40, 50, 65, 80, 95, 115, 150, 185, 225, 265, 330,
@@ -329,7 +329,7 @@ export const CalcStore: FC = ({ children }) => {
   };
 
   // ############################## ДАМЖУУЛАГЧ ###############################
-  // Халалтын нөхцлөөр хөндлөн огтлол сонгох...
+  // 12. Халалтын нөхцлөөр хөндлөн огтлол сонгох...
   const conductor: Conductor = (
     circuitBreakerCurrent,
     conductorType,
@@ -464,7 +464,7 @@ export const CalcStore: FC = ({ children }) => {
       return "Хэт урт шугам, эсвэл хэт их ачаалалтайгаас хамаараад шаардлага хангах утгыг сонгох боломжгүй...";
   };
 
-  // Хүчдэлийн алдагдлаар хөндлөн огтлол сонгох...
+  // 13. Хүчдэлийн алдагдлаар хөндлөн огтлол сонгох...
   const sectionFromDrop: SectionFromDrop = (
     load,
     length,
@@ -485,14 +485,14 @@ export const CalcStore: FC = ({ children }) => {
     return sectionDrop;
   };
 
-  // Халалт, хүчдэлийн алдагдлаас аль ихийг нь өгөх функц...
+  // 14. Халалт, хүчдэлийн алдагдлаас аль ихийг нь өгөх функц...
   const upperSection: UpperSection = (heatSection, dropSection) => {
     return heatSection > dropSection
       ? [heatSection, "Халалтын нөхцлөөр сонгосон"]
       : [dropSection, "Хүчдэлийн алдагдлаар сонгосон"];
   };
 
-  // Хөндлөн огтлолыг string рүү хөрвүүлэх функц...
+  // 15. Хөндлөн огтлолыг string рүү хөрвүүлэх функц...
   const stringifySection = (
     section: number,
     conductorType: string,

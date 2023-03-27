@@ -379,8 +379,8 @@ const ApartmentInput: FC = () => {
 
   const experiment = () => {
     if (calcContext) {
-      const ptbcalcaas = calcContext.ptbCalc(1113, 2);
-      console.log("Хэвлэв : ", ptbcalcaas);
+      const value = calcContext.calcPlumb(24, 30);
+      console.log("Хэвлэв : ", value);
     }
   };
 
