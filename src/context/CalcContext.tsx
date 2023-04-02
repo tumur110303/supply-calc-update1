@@ -17,7 +17,7 @@ const CalcContext = createContext<{
   contactorRelay: Contactor;
 } | null>(null);
 
-type EquilentPowerFactor = (loads: number[], pfs: number[]) => number | string;
+type EquilentPowerFactor = (loads: number[], pf: number[]) => number;
 
 type PtbCalc = (capacity: number, transformerNumber: 1 | 2) => string;
 
@@ -30,7 +30,7 @@ type Interpolation = (
 type ElevatorCalc = (
   quantity: number,
   load: number,
-  twelveFloor: boolean
+  moreThanFloor?: boolean
 ) => number;
 
 // ЗАССАН TYPES...
@@ -151,18 +151,14 @@ export const CalcStore: FC = ({ children }) => {
   };
 
   // 04. Лифтний ачаалал тодорхойлох функцууд...
-  const elevatorCalc = (
-    quantity: number,
-    totalLoad: number,
-    moreThanFloor: boolean
-  ) => {
+  const elevatorCalc: ElevatorCalc = (quantity, totalLoad, moreThanFloor) => {
     let coeffElevator = 0;
 
     if (moreThanFloor) {
       if (quantity == 1) coeffElevator = 1;
       else if (quantity < 4) coeffElevator = 0.9;
       else if (quantity < 6) coeffElevator = 0.8;
-      else if (quantity == 6) coeffElevator = 0.75;
+      else if (quantity === 6) coeffElevator = 0.75;
       else if (quantity > 6 && quantity < 10) {
         coeffElevator = interpolation(
           quantity,
@@ -213,25 +209,27 @@ export const CalcStore: FC = ({ children }) => {
     }
 
     const elevatorLoad = totalLoad * coeffElevator;
-    return elevatorLoad;
+    return totalLoad === 0 || quantity <= 0 ? -1 : elevatorLoad;
   };
 
   // 05. Дундаж чадлын коэффициент...
   const equilentPowerFactor: EquilentPowerFactor = (loads, pf) => {
-    if (loads.length !== pf.length)
-      return "Уучлаарай. Та өгөгдлөө гүйцэд оруулна уу!";
+    if (loads.length !== pf.length) return -1;
+
+    let wrongValue: boolean = false;
+
+    pf.map((el) => {
+      if (el < 0 || el > 1) wrongValue = true;
+    });
 
     const nemegdehuun = loads.map((el, i) => el * pf[i]);
-
-    let sum1 = 0;
-    let sum2 = 0;
 
     const hurtwer: number = nemegdehuun.reduce((a, b) => a + b);
     const huwaari: number = loads.reduce((a, b) => a + b);
 
     const powerFactor = hurtwer / huwaari;
 
-    return powerFactor;
+    return wrongValue ? -1 : powerFactor;
   };
 
   // #########################  Засвартай...   #####################
