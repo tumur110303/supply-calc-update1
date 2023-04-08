@@ -379,10 +379,7 @@ const ApartmentInput: FC = () => {
 
   const experiment = () => {
     if (calcContext) {
-      const value = calcContext.equilentPowerFactor(
-        [11, 25, 92],
-        [0.3, 0.9, 0.4]
-      );
+      const value = calcContext.currentThreePhase(5, 0.8, true, true);
       console.log("Хэвлэв : ", value);
     }
   };

@@ -58,7 +58,21 @@ type CurrentThreePhase = (
 type VoltageDrop = (
   load: number,
   length: number,
-  section: number,
+  section:
+    | 2.5
+    | 4
+    | 6
+    | 10
+    | 16
+    | 25
+    | 35
+    | 50
+    | 70
+    | 95
+    | 120
+    | 150
+    | 185
+    | 240,
   material: "CC" | "CW" | "AC" | "AW",
   onePhase?: boolean
 ) => number;
@@ -235,9 +249,15 @@ export const CalcStore: FC = ({ children }) => {
   // #########################  Засвартай...   #####################
 
   // 06. Гүйдэл тооцох 220B ...
-  const currentOnePhase: CurrentOnePhase = (load, powerFactor, mainUnit) => {
+  const currentOnePhase: CurrentOnePhase = (
+    loadParameter,
+    powerFactor,
+    mainUnit
+  ) => {
     let huwaari = 0;
     let current = 0;
+
+    const load = Math.abs(loadParameter);
 
     if (mainUnit) {
       huwaari = 220 * powerFactor;
@@ -246,12 +266,12 @@ export const CalcStore: FC = ({ children }) => {
       huwaari = 220 * powerFactor;
       current = (1000 * load) / huwaari;
     }
-    return current;
+    return powerFactor > 1 || powerFactor < 0 ? -1 : current;
   };
 
   // 07. Гүйдэл тооцох 380B ...
   const currentThreePhase: CurrentThreePhase = (
-    load,
+    loadParameter,
     powerFactor,
     delta,
     mainUnit
@@ -259,6 +279,7 @@ export const CalcStore: FC = ({ children }) => {
     let huwaari = 0;
     let current = 0;
     const threeSquart = Math.sqrt(3);
+    const load = Math.abs(loadParameter);
 
     if (mainUnit) {
       if (delta) {
@@ -277,17 +298,19 @@ export const CalcStore: FC = ({ children }) => {
         current = (1000 * load) / huwaari;
       }
     }
-    return current;
+    return powerFactor > 1 || powerFactor < 0 ? -1 : current;
   };
 
   // 08. Хүчдэлийн алдагдал тооцох 380В...
   const voltageDrop: VoltageDrop = (
-    load,
-    length,
+    loadParameter,
+    lengthParameter,
     section,
     material,
     onePhase
   ) => {
+    const load = Math.abs(loadParameter);
+    const length = Math.abs(lengthParameter);
     const c = giveC(material, onePhase);
     const hurtwer = load * length;
     const huwaari = c * section;
