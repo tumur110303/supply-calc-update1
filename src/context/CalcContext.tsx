@@ -39,7 +39,7 @@ type CurrentOnePhase = (
   powerFactor: number,
   mainUnit?: boolean
 ) => number;
-type CircuitBreaker = (current: number) => number | string;
+type CircuitBreaker = (current: number) => number;
 type Conductor = (
   circuitBreakerCurrent: number,
   conductorType: "CC" | "CW" | "AC" | "AW",
@@ -87,7 +87,7 @@ type SectionFromDrop = (
   material: "CC" | "CW" | "AC" | "AW",
   onePhase?: boolean
 ) => number | string;
-type Contactor = (current: number) => number | string;
+type Contactor = (current: number) => number[];
 type UpperSection = (
   heatSection: number,
   dropSection: number
@@ -320,7 +320,8 @@ export const CalcStore: FC = ({ children }) => {
   };
 
   // 09. Автомат сонгох 220/380В ...
-  const circuitBreaker: CircuitBreaker = (current) => {
+  const circuitBreaker: CircuitBreaker = (curr) => {
+    const current = Math.abs(curr);
     const circBreaker = [
       16, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 355, 400, 500,
       630, 800, 1000, 1600,
@@ -341,12 +342,16 @@ export const CalcStore: FC = ({ children }) => {
   };
 
   // 11. Контакторын гүйдэл тооцох...
-  const contactorRelay: Contactor = (current) => {
+  const contactorRelay: Contactor = (curr) => {
+    const current = Math.abs(curr);
+
     const contactorTable = [
       9, 12, 18, 25, 32, 40, 50, 65, 80, 95, 115, 150, 185, 225, 265, 330,
     ];
+
     const contactor = getLargeValue(current, contactorTable)[0];
-    return contactor;
+    const termoRelay = Math.ceil(1.05 * current);
+    return [contactor, termoRelay];
   };
 
   // ############################## ДАМЖУУЛАГЧ ###############################
