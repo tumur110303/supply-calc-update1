@@ -45,7 +45,7 @@ type Conductor = (
   conductorType: "CC" | "CW" | "AC" | "AW",
   earthType?: boolean,
   onePhase?: boolean
-) => number | string;
+) => number;
 type GetLargeValue = (value: number, arr: number[]) => number[];
 type ApartmentCalc = (numberApartment: number) => number;
 type ClassifyPlumbLoad = (loads: number[]) => object;
@@ -483,11 +483,10 @@ export const CalcStore: FC = ({ children }) => {
 
     const index = getLargeValue(circuitBreakerCurrent, arrCurrent)[1];
 
-    if (typeof index !== "string") {
+    if (index !== -1) {
       const section = sectionTabs[index];
       return section;
-    } else
-      return "Хэт урт шугам, эсвэл хэт их ачаалалтайгаас хамаараад шаардлага хангах утгыг сонгох боломжгүй...";
+    } else return -1;
   };
 
   // 13. Хүчдэлийн алдагдлаар хөндлөн огтлол сонгох...
@@ -754,7 +753,7 @@ export const CalcStore: FC = ({ children }) => {
     let largeValue = 0;
 
     for (const e of arr) {
-      if (e < value) continue;
+      if (e <= value) continue;
       largeValue = e;
       break;
     }

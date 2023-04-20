@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
 
 import { NavigationContainer } from "@react-navigation/native";
 import "react-native-get-random-values";
