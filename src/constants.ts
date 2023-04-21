@@ -7,7 +7,7 @@ export const darker: string = "#0e1322";
 export const blue: string = "#12B0E8";
 export const green: string = "#02B290"
 export const red:string = '#EF476F';
-export const orange:string = '#df8f3f';
+export const orange:string = '#F6BA6F';
 
 export const w300: string = "Rubik_300Light";
 export const w400: string = "Rubik_400Regular";

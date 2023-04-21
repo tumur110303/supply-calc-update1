@@ -7,7 +7,16 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { dark, light, main, w400, blue, green } from "../../../constants";
+import {
+  dark,
+  light,
+  main,
+  w400,
+  blue,
+  green,
+  w500,
+  red,
+} from "../../../constants";
 import { useNavigation } from "@react-navigation/native";
 import NoSubscription from "../../NoSubscription";
 import SubscriptionContext from "../../../context/SubscriptionContext";
@@ -26,9 +35,9 @@ const CalculatorScreen: FC = () => {
   const navigation = useNavigation();
   const contents: ContentType[] = [
     {
-      title: "Орон сууцны барилга тооцох",
-      navigationName: "Орон сууц",
-      icon: "home-city-outline",
+      title: "Оролтын тооцоо",
+      navigationName: "Оролтын тооцоо",
+      icon: "diversify",
       color: blue,
     },
     {
@@ -96,6 +105,7 @@ const CalculatorScreen: FC = () => {
 
   return (
     <View style={css.container}>
+      <Text style={css.bigTitle}>Орон сууцны барилгын тооцоо</Text>
       <FlatList
         keyExtractor={(item) => item.navigationName}
         data={contents}
@@ -154,7 +164,13 @@ const css = StyleSheet.create({
   container: {
     paddingVertical: 10,
     paddingHorizontal: 10,
-    flexDirection: "row",
+  },
+  bigTitle: {
+    marginVertical: 10,
+    alignSelf: "center",
+    color: dark,
+    textTransform: "uppercase",
+    fontFamily: w500,
   },
   line: {
     height: "100%",
@@ -167,11 +183,10 @@ const css = StyleSheet.create({
     alignItems: "center",
     position: "relative",
     backgroundColor: light,
-    paddingVertical: 20,
+    paddingVertical: 10,
     paddingHorizontal: 15,
-    marginVertical: 10,
-
-    borderRadius: 5,
+    borderBottomColor: blue,
+    borderBottomWidth: 1,
   },
   title: {
     fontFamily: w400,

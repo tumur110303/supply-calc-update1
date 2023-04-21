@@ -7,6 +7,7 @@ type Props = {
   onValueChange: (value: boolean) => void;
   value?: boolean;
   label?: string;
+  innerText?: [string, string];
 };
 
 const OnOffSwitch: FC<Props> = (props) => {
@@ -32,7 +33,8 @@ const OnOffSwitch: FC<Props> = (props) => {
       </Text>
       <Switch
         onPress={props.onValueChange}
-        onValue={props.value ? props.value : false}
+        value={props.value ? props.value : false}
+        innerText={props.innerText}
       />
     </View>
   );

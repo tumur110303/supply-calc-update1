@@ -1,6 +1,7 @@
 import { FC, createContext } from "react";
 
 const CalcContext = createContext<{
+  upperValue: UpperValue;
   currentThreePhase: CurrentThreePhase;
   voltageDrop: VoltageDrop;
   circuitBreaker: CircuitBreaker;
@@ -15,11 +16,18 @@ const CalcContext = createContext<{
   classifyPlumbLoad: ClassifyPlumbLoad;
   sectionFromDrop: SectionFromDrop;
   contactorRelay: Contactor;
+  stringifySection: StringifySection;
 } | null>(null);
 
 type EquilentPowerFactor = (loads: number[], pf: number[]) => number;
 
 type PtbCalc = (capacity: number, transformerNumber: 1 | 2) => string;
+type StringifySection = (
+  section: number,
+  conductorType: "CW" | "CC" | "AW" | "AC",
+  earthType?: boolean,
+  onePhase?: boolean
+) => string;
 
 type CalcPlumb = (quantity: number, load: number) => number;
 type Interpolation = (
@@ -88,10 +96,7 @@ type SectionFromDrop = (
   onePhase?: boolean
 ) => number | string;
 type Contactor = (current: number) => number[];
-type UpperSection = (
-  heatSection: number,
-  dropSection: number
-) => [number, string];
+type UpperValue = (value1: number, value2: number) => number;
 
 // ########################## ҮНДСЭН ФУНКЦ ################################
 export const CalcStore: FC = ({ children }) => {
@@ -131,7 +136,7 @@ export const CalcStore: FC = ({ children }) => {
     )[0];
 
     const stringValue =
-      tpPower !== -1
+      tpPower !== 0
         ? `${transformerNumber}x${tpPower} кВА чадалтай дэд станц`
         : "Sн=40МВА-аас илүү чадалтай дэд станц";
 
@@ -146,7 +151,7 @@ export const CalcStore: FC = ({ children }) => {
       privLoadTab
     );
     const apartmentLoad = Math.abs(numberApartment) * privLoad;
-    return numberApartment === 0 ? -1 : apartmentLoad;
+    return numberApartment === 0 ? 0 : apartmentLoad;
   };
 
   // 03. Сангийн ачаалал тодорхойлох функц...
@@ -161,7 +166,7 @@ export const CalcStore: FC = ({ children }) => {
 
     const plumbLoad = Math.abs(totalLoad) * coeff;
 
-    return quantity <= 0 || totalLoad === 0 ? -1 : plumbLoad;
+    return quantity <= 0 || totalLoad === 0 ? 0 : plumbLoad;
   };
 
   // 04. Лифтний ачаалал тодорхойлох функцууд...
@@ -223,12 +228,12 @@ export const CalcStore: FC = ({ children }) => {
     }
 
     const elevatorLoad = totalLoad * coeffElevator;
-    return totalLoad === 0 || quantity <= 0 ? -1 : elevatorLoad;
+    return totalLoad === 0 || quantity <= 0 ? 0 : elevatorLoad;
   };
 
   // 05. Дундаж чадлын коэффициент...
   const equilentPowerFactor: EquilentPowerFactor = (loads, pf) => {
-    if (loads.length !== pf.length) return -1;
+    if (loads.length !== pf.length) return 0;
 
     let wrongValue: boolean = false;
 
@@ -243,7 +248,7 @@ export const CalcStore: FC = ({ children }) => {
 
     const powerFactor = hurtwer / huwaari;
 
-    return wrongValue ? -1 : powerFactor;
+    return wrongValue ? 0 : powerFactor;
   };
 
   // #########################  Засвартай...   #####################
@@ -266,7 +271,7 @@ export const CalcStore: FC = ({ children }) => {
       huwaari = 220 * powerFactor;
       current = (1000 * load) / huwaari;
     }
-    return powerFactor > 1 || powerFactor < 0 ? -1 : current;
+    return powerFactor > 1 || powerFactor < 0 ? 0 : current;
   };
 
   // 07. Гүйдэл тооцох 380B ...
@@ -298,7 +303,7 @@ export const CalcStore: FC = ({ children }) => {
         current = (1000 * load) / huwaari;
       }
     }
-    return powerFactor > 1 || powerFactor < 0 ? -1 : current;
+    return powerFactor > 1 || powerFactor < 0 ? 0 : current;
   };
 
   // 08. Хүчдэлийн алдагдал тооцох 380В...
@@ -324,10 +329,13 @@ export const CalcStore: FC = ({ children }) => {
     const current = Math.abs(curr);
     const circBreaker = [
       16, 25, 32, 40, 50, 63, 80, 100, 125, 160, 200, 250, 315, 355, 400, 500,
-      630, 800, 1000, 1600,
+      630, 800, 1000, 1600, 2000,
     ];
 
-    const circuitBreakerCurrent = getLargeValue(current * 1.15, circBreaker)[0];
+    const circuitBreakerCurrent =
+      getLargeValue(current * 1.15, circBreaker)[0] !== -1
+        ? getLargeValue(current * 1.15, circBreaker)[0]
+        : 0;
 
     return circuitBreakerCurrent;
   };
@@ -482,11 +490,9 @@ export const CalcStore: FC = ({ children }) => {
     }
 
     const index = getLargeValue(circuitBreakerCurrent, arrCurrent)[1];
+    const section = index !== -1 ? sectionTabs[index] : 0;
 
-    if (index !== -1) {
-      const section = sectionTabs[index];
-      return section;
-    } else return -1;
+    return section;
   };
 
   // 13. Хүчдэлийн алдагдлаар хөндлөн огтлол сонгох...
@@ -497,254 +503,112 @@ export const CalcStore: FC = ({ children }) => {
     material,
     onePhase
   ) => {
-    const arrConductor = [
-      2.5, 4, 6, 10, 16, 25, 35, 50, 70, 95, 120, 150, 185, 240,
-    ];
     const c = giveC(material, onePhase);
     const hurtwer = load * length;
     const huwaari = c * allowDrop;
     const real = hurtwer / huwaari;
 
-    const sectionDrop = getLargeValue(real, arrConductor)[0];
+    const sectionDrop = getLargeValue(real, sectionTabs)[0];
 
     return sectionDrop;
   };
 
-  // 14. Халалт, хүчдэлийн алдагдлаас аль ихийг нь өгөх функц...
-  const upperSection: UpperSection = (heatSection, dropSection) => {
-    return heatSection > dropSection
-      ? [heatSection, "Халалтын нөхцлөөр сонгосон"]
-      : [dropSection, "Хүчдэлийн алдагдлаар сонгосон"];
+  // 14. 2 тооны аль ихийг өгөх функц...
+  const upperValue: UpperValue = (value1, value2) => {
+    return value1 === 0 || value2 === 0 ? 0 : value1 > value2 ? value1 : value2;
   };
 
   // 15. Хөндлөн огтлолыг string рүү хөрвүүлэх функц...
-  const stringifySection = (
-    section: number,
-    conductorType: string,
-    earthType: boolean,
-    onePhase: boolean
+  const stringifySection: StringifySection = (
+    section,
+    conductorType,
+    earthType,
+    onePhase
   ) => {
+    let sectionString: string[] = [];
     // 220B ...
     const wire220 = [
-      {
-        section: 2.5,
-        text: earthType ? "3x(1x2.5) мм.кв" : "2x(1x2.5) мм.кв",
-      },
-      {
-        section: 4,
-        text: earthType ? "3x(1x4) мм.кв" : "2x(1x4) мм.кв",
-      },
-      {
-        section: 6,
-        text: earthType ? "3x(1x6) мм.кв" : "2x(1x6) мм.кв",
-      },
-      {
-        section: 10,
-        text: earthType ? "3x(1x10) мм.кв" : "2x(1x10) мм.кв",
-      },
-      {
-        section: 16,
-        text: earthType ? "3x(1x16) мм.кв" : "2x(1x16) мм.кв",
-      },
-      {
-        section: 25,
-        text: earthType ? "3x(1x25) мм.кв" : "2x(1x25) мм.кв",
-      },
-      {
-        section: 35,
-        text: earthType ? "3x(1x35) мм.кв" : "2x(1x35) мм.кв",
-      },
-      {
-        section: 50,
-        text: earthType ? "3x(1x50) мм.кв" : "2x(1x50) мм.кв",
-      },
-      {
-        section: 70,
-        text: earthType ? "3x(1x70) мм.кв" : "2x(1x70) мм.кв",
-      },
-      {
-        section: 95,
-        text: earthType ? "3x(1x95) мм.кв" : "2x(1x95) мм.кв",
-      },
-      {
-        section: 120,
-        text: earthType ? "3x(1x120) мм.кв" : "2x(1x120) мм.кв",
-      },
-      {
-        section: 150,
-        text: earthType ? "3x(1x150) мм.кв" : "2x(1x150) мм.кв",
-      },
+      earthType ? "3x(1x2.5) " : "2x(1x2.5) ",
+      earthType ? "3x(1x4) " : "2x(1x4) ",
+      earthType ? "3x(1x6) " : "2x(1x6) ",
+      earthType ? "3x(1x10) " : "2x(1x10) ",
+      earthType ? "3x(1x16) " : "2x(1x16) ",
+      earthType ? "3x(1x25) " : "2x(1x25) ",
+      earthType ? "3x(1x35) " : "2x(1x35) ",
+      earthType ? "3x(1x50) " : "2x(1x50) ",
+      earthType ? "3x(1x70) " : "2x(1x70) ",
+      earthType ? "3x(1x95) " : "2x(1x95) ",
+      earthType ? "3x(1x120) " : "2x(1x120) ",
+      earthType ? "3x(1x150) " : "2x(1x150) ",
+      earthType ? "3x(1x185) " : "2x(1x185) ",
+      earthType ? "3x(1x240) " : "2x(1x240) ",
     ];
 
     const cable220 = [
-      {
-        section: 2.5,
-        text: earthType ? "3x2.5 мм.кв" : "2x2.5 мм.кв",
-      },
-      {
-        section: 4,
-        text: earthType ? "3x4 мм.кв" : "2x4 мм.кв",
-      },
-      {
-        section: 6,
-        text: earthType ? "3x6 мм.кв" : "2x6 мм.кв",
-      },
-      {
-        section: 10,
-        text: earthType ? "3x10 мм.кв" : "2x10 мм.кв",
-      },
-      {
-        section: 16,
-        text: earthType ? "3x16 мм.кв" : "2x16 мм.кв",
-      },
-      {
-        section: 25,
-        text: earthType ? "3x25 мм.кв" : "2x25 мм.кв",
-      },
-      {
-        section: 35,
-        text: earthType ? "3x35 мм.кв" : "2x35 мм.кв",
-      },
-      {
-        section: 50,
-        text: earthType ? "3x50 мм.кв" : "2x50 мм.кв",
-      },
-      {
-        section: 70,
-        text: earthType ? "3x70 мм.кв" : "2x70 мм.кв",
-      },
-      {
-        section: 95,
-        text: earthType ? "3x95 мм.кв" : "2x95 мм.кв",
-      },
-      {
-        section: 120,
-        text: earthType ? "3x120 мм.кв" : "2x120 мм.кв",
-      },
-      {
-        section: 150,
-        text: earthType ? "3x150 мм.кв" : "2x150 мм.кв",
-      },
+      earthType ? "3x2.5 " : "2x2.5 ",
+      earthType ? "3x4 " : "2x4 ",
+      earthType ? "3x6 " : "2x6 ",
+      earthType ? "3x10 " : "2x10 ",
+      earthType ? "3x16 " : "2x16 ",
+      earthType ? "3x25 " : "2x25 ",
+      earthType ? "3x35 " : "2x35 ",
+      earthType ? "3x50 " : "2x50 ",
+      earthType ? "3x70 " : "2x70 ",
+      earthType ? "3x95 " : "2x95 ",
+      earthType ? "3x120 " : "2x120 ",
+      earthType ? "3x150 " : "2x150 ",
+      earthType ? "3x185 " : "2x185 ",
+      earthType ? "3x240 " : "2x240 ",
     ];
 
     // 380B ...
     const cable380 = [
-      {
-        section: 2.5,
-        text: earthType ? "5x2.5 мм.кв" : "4x2.5 мм.кв",
-      },
-      {
-        section: 4,
-        text: earthType ? "5x4 мм.кв" : "4x4 мм.кв",
-      },
-      {
-        section: 6,
-        text: earthType ? "5x6 мм.кв" : "4x6 мм.кв",
-      },
-      {
-        section: 10,
-        text: earthType ? "5x10 мм.кв" : "4x10 мм.кв",
-      },
-      {
-        section: 16,
-        text: earthType ? "5x16 мм.кв" : "4x16 мм.кв",
-      },
-      {
-        section: 25,
-        text: earthType ? "4x25+1x16 мм.кв" : "3x25+1x16 мм.кв",
-      },
-      {
-        section: 35,
-        text: earthType ? "4x35+1x25 мм.кв" : "3x35+1x25 мм.кв",
-      },
-      {
-        section: 50,
-        text: earthType ? "4x50+1x25 мм.кв" : "3x50+1x25 мм.кв",
-      },
-      {
-        section: 70,
-        text: earthType ? "4x70+1x35 мм.кв" : "3x70+1x35 мм.кв",
-      },
-      {
-        section: 95,
-        text: earthType ? "4x95+1x50 мм.кв" : "3x95+1x50 мм.кв",
-      },
-      {
-        section: 120,
-        text: earthType ? "4x120+1x70 мм.кв" : "3x120+1x70 мм.кв",
-      },
-      {
-        section: 150,
-        text: earthType ? "4x150+1x95 мм.кв" : "3x150+1x95 мм.кв",
-      },
-      {
-        section: 185,
-        text: earthType ? "4x185+1x95 мм.кв" : "3x185+1x95 мм.кв",
-      },
-      {
-        section: 240,
-        text: earthType ? "4x240+1x120 мм.кв" : "3x240+1x120 мм.кв",
-      },
+      earthType ? "5x2.5 " : "4x2.5 ",
+      earthType ? "5x4 " : "4x4 ",
+      earthType ? "5x6 " : "4x6 ",
+      earthType ? "5x10 " : "4x10 ",
+      earthType ? "5x16 " : "4x16 ",
+      earthType ? "4x25+1x16 " : "3x25+1x16 ",
+      earthType ? "4x35+1x25 " : "3x35+1x25 ",
+      earthType ? "4x50+1x25 " : "3x50+1x25 ",
+      earthType ? "4x70+1x35 " : "3x70+1x35 ",
+      earthType ? "4x95+1x50 " : "3x95+1x50 ",
+      earthType ? "4x120+1x70 " : "3x120+1x70 ",
+      earthType ? "4x150+1x95 " : "3x150+1x95 ",
+      earthType ? "4x185+1x95 " : "3x185+1x95 ",
+      earthType ? "4x240+1x120 " : "3x240+1x120 ",
     ];
 
     const wire380 = [
-      {
-        section: 2.5,
-        text: earthType ? "5x(1x2.5) мм.кв" : "4x(1x2.5) мм.кв",
-      },
-      {
-        section: 4,
-        text: earthType ? "5x(1x4) мм.кв" : "4x(1x4) мм.кв",
-      },
-      {
-        section: 6,
-        text: earthType ? "5x(1x6) мм.кв" : "4x(1x6) мм.кв",
-      },
-      {
-        section: 10,
-        text: earthType ? "5x(1x10) мм.кв" : "4x(1x10) мм.кв",
-      },
-      {
-        section: 16,
-        text: earthType ? "5x(1x16) мм.кв" : "4x(1x16) мм.кв",
-      },
-      {
-        section: 25,
-        text: earthType ? "4x(1x25)+(1x16) мм.кв" : "3x(1x25)+(1x16) мм.кв",
-      },
-      {
-        section: 35,
-        text: earthType ? "4x(1x35)+(1x25) мм.кв" : "3x(1x35)+(1x25) мм.кв",
-      },
-      {
-        section: 50,
-        text: earthType ? "4x(1x50)+(1x25) мм.кв" : "3x(1x50)+(1x25) мм.кв",
-      },
-      {
-        section: 70,
-        text: earthType ? "4x(1x70)+(1x35) мм.кв" : "3x(1x70)+(1x35) мм.кв",
-      },
-      {
-        section: 95,
-        text: earthType ? "4x(1x95)+(1x50) мм.кв" : "3x(1x95)+(1x50) мм.кв",
-      },
-      {
-        section: 120,
-        text: earthType ? "4x(1x120)+(1x70) мм.кв" : "3x(1x120)+(1x70) мм.кв",
-      },
-      {
-        section: 150,
-        text: earthType ? "4x(1x150)+(1x95) мм.кв" : "3x(1x150)+(1x95) мм.кв",
-      },
-      {
-        section: 185,
-        text: earthType ? "4x(1x185)+(1x95) мм.кв" : "3x(1x185)+(1x95) мм.кв",
-      },
-      {
-        section: 240,
-        text: earthType ? "4x(1x240)+(1x120) мм.кв" : "3x(1x240)+(1x120) мм.кв",
-      },
+      earthType ? "5x(1x2.5) " : "4x(1x2.5) ",
+      earthType ? "5x(1x4) " : "4x(1x4) ",
+      earthType ? "5x(1x6) " : "4x(1x6) ",
+      earthType ? "5x(1x10) " : "4x(1x10) ",
+      earthType ? "5x(1x16) " : "4x(1x16) ",
+      earthType ? "4x(1x25)+(1x16) " : "3x(1x25)+(1x16) ",
+      earthType ? "4x(1x35)+(1x25) " : "3x(1x35)+(1x25) ",
+      earthType ? "4x(1x50)+(1x25) " : "3x(1x50)+(1x25) ",
+      earthType ? "4x(1x70)+(1x35) " : "3x(1x70)+(1x35) ",
+      earthType ? "4x(1x95)+(1x50) " : "3x(1x95)+(1x50) ",
+      earthType ? "4x(1x120)+(1x70) " : "3x(1x120)+(1x70) ",
+      earthType ? "4x(1x150)+(1x95) " : "3x(1x150)+(1x95) ",
+      earthType ? "4x(1x185)+(1x95) " : "3x(1x185)+(1x95) ",
+      earthType ? "4x(1x240)+(1x120) " : "3x(1x240)+(1x120) ",
     ];
+
+    const i = getEqualValue(section, sectionTabs)[1];
+
+    if (onePhase) {
+      sectionString =
+        conductorType === "AC" || conductorType === "CC" ? cable220 : wire220;
+    } else {
+      sectionString =
+        conductorType === "AC" || conductorType === "CC" ? cable380 : wire380;
+    }
+
+    return section === 0 || i === -1
+      ? "Хэт их ачаалал юм уу хэт урт шугамаас болоод тохирох огтлол байхгүй! Иймээс  шийдлээ дахин бодож үзнэ үү!"
+      : sectionString[i];
   };
 
   // ########################### ТУСЛАХ ФУНКЦУУД  ################################
@@ -753,14 +617,14 @@ export const CalcStore: FC = ({ children }) => {
     let largeValue = 0;
 
     for (const e of arr) {
-      if (e <= value) continue;
+      if (e < value) continue;
       largeValue = e;
       break;
     }
 
     const i = largeValue !== 0 ? arr.indexOf(largeValue) : -1;
 
-    return largeValue === 0 || i === -1 ? [-1, -1] : [largeValue, i];
+    return largeValue === 0 || i === -1 ? [0, i] : [largeValue, i];
   };
 
   // ТАБЛИЦТАЙ ТЭНЦҮҮЛЖ АВАХ ФУНКЦ ...
@@ -775,7 +639,7 @@ export const CalcStore: FC = ({ children }) => {
 
     const i = equalValue !== 0 ? arr.indexOf(equalValue) : -1;
 
-    return equalValue === 0 || i === -1 ? [equalValue, i] : [-1, -1];
+    return equalValue !== 0 || i !== -1 ? [equalValue, i] : [0, i];
   };
 
   // Интерполяц хийх утга буцаадаг функц...
@@ -822,6 +686,7 @@ export const CalcStore: FC = ({ children }) => {
   return (
     <CalcContext.Provider
       value={{
+        upperValue,
         currentThreePhase,
         voltageDrop,
         circuitBreaker,
@@ -836,6 +701,7 @@ export const CalcStore: FC = ({ children }) => {
         classifyPlumbLoad,
         sectionFromDrop,
         contactorRelay,
+        stringifySection,
       }}
     >
       {children}
