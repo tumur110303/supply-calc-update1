@@ -1,7 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { useState } from "react";
 
 import { NavigationContainer } from "@react-navigation/native";
 import "react-native-get-random-values";
@@ -16,6 +15,8 @@ import {
 
 import { CalcStore } from "./src/context/CalcContext";
 import MainNavigation from "./src/navigations/MainNavigation";
+import { UserStore } from "./src/context/UserContext";
+import Container from "./src/Container";
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -44,9 +45,13 @@ export default function App() {
     return (
       <NavigationContainer>
         <StatusBar style="light" />
-        <CalcStore>
-          <MainNavigation />
-        </CalcStore>
+        <UserStore>
+          <CalcStore>
+            <Container>
+              <MainNavigation />
+            </Container>
+          </CalcStore>
+        </UserStore>
       </NavigationContainer>
     );
   } else {

@@ -1,8 +1,8 @@
-import { createStackNavigator, Header } from "@react-navigation/stack";
+import { createStackNavigator } from "@react-navigation/stack";
 import useMainHeader from "../hooks/useMainHeader";
 
-import CalculatorScreen from "../screens/calculator/load/CalculatorsScreen";
-import ApartmentInput from "../screens/calculator/load/ApartmentInput";
+import CalculatorScreen from "../screens//Supply_Calculator/CalculatorsScreen";
+import ApartmentInput from "../screens/Supply_Calculator/ApartmentInput";
 
 export type StackNavigationParams = {
   [name: string]: undefined;
@@ -17,7 +17,6 @@ const CalculatorNavigation = () => {
       initialRouteName="Тооцооны програм"
     >
       <Stack.Screen name="Тооцооны програм" component={CalculatorScreen} />
-
       <Stack.Screen name="Оролтын тооцоо" component={ApartmentInput} />
     </Stack.Navigator>
   );

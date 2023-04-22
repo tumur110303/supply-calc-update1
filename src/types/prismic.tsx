@@ -30,6 +30,29 @@ export type Blog = {
   };
   search_keys: "ihc major sport";
 };
+export type Category = {
+  alternate_languages: [];
+  data: {
+    title: [
+      {
+        spans: [];
+        text: string;
+        type: string;
+      }
+    ];
+  };
+  first_publication_date: string;
+  href: string;
+  id: string;
+  lang: string;
+  last_publication_date: string;
+  linked_documents: [];
+  slugs: string[];
+  tags: [];
+  type: string;
+  uid: null;
+  url: null;
+};
 
 export type Title = {
   type:
