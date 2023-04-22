@@ -7,7 +7,6 @@ import Textfield from "../../../components/Textfield";
 import FormPicker from "../../../components/FormPicker";
 import { dark, light, main, w400, w500 } from "../../../constants";
 import Modal from "../../../components/ResultModal";
-import CountContext from "../../../context/CountContext";
 import Switch from "../../../components/switches/Switch";
 import * as Animatable from "react-native-animatable";
 
@@ -49,7 +48,6 @@ type Error = {
 };
 
 const ApartmentInput: FC = () => {
-  const { increase } = useContext(CountContext);
   const calcContext = useContext(CalcContext);
 
   const [value, setValue] = useState<Value>({
@@ -398,7 +396,6 @@ const ApartmentInput: FC = () => {
     }
 
     setVisible(true);
-    await increase();
   };
 
   //   Туршилтын функц...

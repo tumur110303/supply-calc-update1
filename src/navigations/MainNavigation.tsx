@@ -2,19 +2,11 @@ import { createDrawerNavigator } from "@react-navigation/drawer";
 import { useContext } from "react";
 
 import useMainHeader from "../hooks/useMainHeader";
-import UserContext from "../context/UserContext";
 
-import HomeScreen from "../screens/HomeScreen";
-import LoginScreen from "../screens/LoginScreen";
-import Logout from "../screens/Logout";
-import RegisterScreen from "../screens/RegisterScreen";
+import HomeScreen from "../screens/other/HomeScreen";
 import CalculatorNavigation from "./CalculatorNavigation";
 import BlogNavigation from "./BlogNavigation";
-import NoSubscription from "../screens/NoSubscription";
 import TestNavigation from "./TestNavigation";
-import VerificationScreen from "../screens/VerificationScreen";
-import PasswordScreen from "../screens/PasswordScreen";
-import ChangePassword from "../screens/ChangePassword";
 import TheoryCalculatorNavigation from "./TheoryCalculatorNavigation";
 
 export type MainNavigationParams = {
@@ -24,81 +16,45 @@ export type MainNavigationParams = {
 const Drawer = createDrawerNavigator<MainNavigationParams>();
 
 const MainNavigation = () => {
-  const userContext = useContext(UserContext);
   return (
     <Drawer.Navigator
       screenOptions={(options) => useMainHeader(options)}
       initialRouteName={"Нүүр хуудас"}
     >
-      {userContext?.status ? (
+      <>
         <>
-          <>
-            <Drawer.Screen name="Нүүр хуудас" component={HomeScreen} />
+          <Drawer.Screen name="Нүүр хуудас" component={HomeScreen} />
 
-            <Drawer.Screen
-              name="Цахилгаан хэлхээний онол"
-              options={{
-                headerShown: false,
-              }}
-              component={TheoryCalculatorNavigation}
-            />
-            <Drawer.Screen
-              name="Тооцоолол"
-              options={{
-                headerShown: false,
-              }}
-              component={CalculatorNavigation}
-            />
-            <Drawer.Screen
-              name="Нийтлэл"
-              options={{
-                headerShown: false,
-              }}
-              component={BlogNavigation}
-            />
-            <Drawer.Screen
-              name="Тест"
-              options={{
-                headerShown: false,
-              }}
-              component={TestNavigation}
-            />
-          </>
           <Drawer.Screen
-            name="Гарах"
+            name="Цахилгаан хэлхээний онол"
             options={{
               headerShown: false,
             }}
-            component={Logout}
+            component={TheoryCalculatorNavigation}
           />
-        </>
-      ) : (
-        <>
           <Drawer.Screen
+            name="Тооцоолол"
             options={{
               headerShown: false,
             }}
-            name="Нэвтрэх"
-            component={LoginScreen}
+            component={CalculatorNavigation}
           />
           <Drawer.Screen
+            name="Нийтлэл"
             options={{
-              drawerItemStyle: { height: 0 },
+              headerShown: false,
             }}
-            name="Баталгаажуулах"
-            component={VerificationScreen}
+            component={BlogNavigation}
           />
-          <Drawer.Screen name="Нууц үг сэргээх" component={PasswordScreen} />
           <Drawer.Screen
-            name="Нууц үг солих"
-            component={ChangePassword}
+            name="Тест"
             options={{
-              drawerItemStyle: { height: 0 },
+              headerShown: false,
             }}
+            component={TestNavigation}
           />
-          <Drawer.Screen name="Бүртгүүлэх" component={RegisterScreen} />
         </>
-      )}
+      </>
     </Drawer.Navigator>
   );
 };

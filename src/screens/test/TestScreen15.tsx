@@ -11,12 +11,10 @@ import { ScrollView } from "react-native-gesture-handler";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { dark, main, w500 } from "../../constants";
 import Button from "../../components/Button";
-import CountContext from "../../context/CountContext";
 
 const { width } = Dimensions.get("screen");
 
 const TestScreen15: FC = () => {
-  const { increase } = useContext(CountContext);
   const [hariulsan, setHariulsan] = useState<number[]>([]);
   const [disabled, setDisabled] = useState<boolean>(false);
   const [shalgasan, setShalgasan] = useState<boolean>(false);
@@ -84,8 +82,6 @@ const TestScreen15: FC = () => {
         ]
       );
     }
-
-    await increase();
   };
 
   const tests = [

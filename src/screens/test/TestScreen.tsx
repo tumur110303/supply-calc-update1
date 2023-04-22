@@ -10,9 +10,6 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { dark, light, main, w400, blue, green } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
-import SubscriptionContext from "../../context/SubscriptionContext";
-import CountContext from "../../context/CountContext";
-import NoSubscription from "../NoSubscription";
 
 type ContentType = {
   title: string;
@@ -22,8 +19,6 @@ type ContentType = {
 };
 
 const CalculatorScreen: FC = () => {
-  const subscription = useContext(SubscriptionContext);
-  const { count } = useContext(CountContext);
   const navigation = useNavigation();
   const contents: ContentType[] = [
     {
@@ -144,22 +139,6 @@ const CalculatorScreen: FC = () => {
           </TouchableOpacity>
         )}
       />
-      {(() => {
-        if (!subscription && count > 4) {
-          return (
-            <View style={css.overlayWrapper}>
-              <TouchableOpacity
-                style={css.overlay}
-                activeOpacity={1}
-                onPress={() => navigation.goBack()}
-              />
-              <View style={css.overlayContainer}>
-                <NoSubscription />
-              </View>
-            </View>
-          );
-        } else null;
-      })()}
     </View>
   );
 };

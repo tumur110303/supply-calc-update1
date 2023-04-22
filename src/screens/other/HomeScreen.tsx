@@ -1,4 +1,4 @@
-import { FC, useContext, useEffect } from "react";
+import { FC } from "react";
 import {
   FlatList,
   StyleSheet,
@@ -12,11 +12,7 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-import { dark, gray, light, main, w400, w500 } from "../constants";
-import UserContext from "../context/UserContext";
-import SocketContext from "../context/SocketContext";
-import CountContext from "../context/CountContext";
-import SubscriptionContext from "../context/SubscriptionContext";
+import { dark, gray, light, main, w400, w500 } from "../../constants";
 
 type ContentType = {
   title: string;
@@ -28,10 +24,6 @@ type ContentType = {
 const { height } = Dimensions.get("window");
 
 const HomeScreen: FC = () => {
-  const userContext = useContext(UserContext);
-  const { count } = useContext(CountContext);
-  const subscription = useContext(SubscriptionContext);
-  const socket = useContext(SocketContext);
   const navigation = useNavigation();
 
   const contents: ContentType[] = [
@@ -61,37 +53,8 @@ const HomeScreen: FC = () => {
     },
   ];
 
-  useEffect(() => {
-    (async () => {
-      const account = await userContext?.userInfo();
-
-      if (!account) {
-        userContext?.setStatus(false);
-      } else {
-        const id = account._id;
-        socket?.on(`logout-${id}`, () => {
-          navigation.navigate("Гарах" as any);
-        });
-      }
-    })();
-  }, []);
-
   return (
     <ScrollView style={css.container}>
-      {!subscription && (
-        <Text
-          style={{
-            textTransform: "uppercase",
-            textAlign: "center",
-            color: main,
-            fontFamily: w400,
-            fontSize: 18,
-            marginVertical: 10,
-          }}
-        >
-          Таны ашиглах эрх: {5 - count < 0 ? "0" : 5 - count}
-        </Text>
-      )}
       <FlatList
         data={contents}
         keyExtractor={(item) => item.navigationName}

@@ -16,8 +16,6 @@ import {
 
 import { CalcStore } from "./src/context/CalcContext";
 import MainNavigation from "./src/navigations/MainNavigation";
-import { UserStore } from "./src/context/UserContext";
-import Container from "./src/Container";
 
 export default function App() {
   let [fontsLoaded] = useFonts({
@@ -46,13 +44,9 @@ export default function App() {
     return (
       <NavigationContainer>
         <StatusBar style="light" />
-        <UserStore>
-          <CalcStore>
-            <Container>
-              <MainNavigation />
-            </Container>
-          </CalcStore>
-        </UserStore>
+        <CalcStore>
+          <MainNavigation />
+        </CalcStore>
       </NavigationContainer>
     );
   } else {

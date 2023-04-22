@@ -18,9 +18,6 @@ import {
   red,
 } from "../../../constants";
 import { useNavigation } from "@react-navigation/native";
-import NoSubscription from "../../NoSubscription";
-import SubscriptionContext from "../../../context/SubscriptionContext";
-import CountContext from "../../../context/CountContext";
 
 type ContentType = {
   title: string;
@@ -30,8 +27,6 @@ type ContentType = {
 };
 
 const CalculatorScreen: FC = () => {
-  const subscription = useContext(SubscriptionContext);
-  const { count } = useContext(CountContext);
   const navigation = useNavigation();
   const contents: ContentType[] = [
     {
@@ -138,22 +133,6 @@ const CalculatorScreen: FC = () => {
           </TouchableOpacity>
         )}
       />
-      {(() => {
-        if (!subscription && count > 4) {
-          return (
-            <View style={css.overlayWrapper}>
-              <TouchableOpacity
-                style={css.overlay}
-                activeOpacity={1}
-                onPress={() => navigation.goBack()}
-              />
-              <View style={css.overlayContainer}>
-                <NoSubscription />
-              </View>
-            </View>
-          );
-        } else null;
-      })()}
     </View>
   );
 };

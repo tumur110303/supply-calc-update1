@@ -10,9 +10,9 @@ import {
 } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import axios from "axios";
-import { Blog } from "../types/prismic";
+import { Blog } from "../../types/prismic";
 import { RichText } from "react-native-prismic-richtext";
-import { dark, main, w400, w500 } from "../constants";
+import { dark, main, w400, w500 } from "../../constants";
 
 const { width } = Dimensions.get("window");
 

@@ -2,8 +2,8 @@ import { createStackNavigator } from "@react-navigation/stack";
 import useBlogHeader from "../hooks/useBlogHeader";
 import useMainHeader from "../hooks/useMainHeader";
 
-import AllBlogsScreen from "../screens/AllBlogsScreen";
-import BlogScreen from "../screens/BlogScreen";
+import AllBlogsScreen from "../screens/blog/AllBlogsScreen";
+import BlogScreen from "../screens/blog/BlogScreen";
 
 export type StackNavigationParams = {
   [name: string]: undefined;

@@ -13,18 +13,13 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/mn";
-import { Response } from "../types/prismic";
-import { dark, gray, light, main, w400, w500 } from "../constants";
+import { Response } from "../../types/prismic";
+import { dark, gray, light, main, w400, w500 } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
-import NoSubscription from "./NoSubscription";
-import SubscriptionContext from "../context/SubscriptionContext";
-import CountContext from "../context/CountContext";
 
 const { width } = Dimensions.get("window");
 
 const AllBlogsScreen: FC = () => {
-  const subscription = useContext(SubscriptionContext);
-  const { count, increase } = useContext(CountContext);
   const [blogs, setBlogs] = useState<Response | null>(null);
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
@@ -94,7 +89,6 @@ const AllBlogsScreen: FC = () => {
                         id: blog.id,
                       } as never
                     );
-                    await increase();
                   }}
                 >
                   <Image
@@ -109,23 +103,6 @@ const AllBlogsScreen: FC = () => {
             })}
           </ScrollView>
         )}
-
-        {(() => {
-          if (!subscription && count > 4) {
-            return (
-              <View style={css.overlayWrapper}>
-                <TouchableOpacity
-                  style={css.overlay}
-                  activeOpacity={1}
-                  onPress={() => navigation.goBack()}
-                />
-                <View style={css.overlayContainer}>
-                  <NoSubscription />
-                </View>
-              </View>
-            );
-          } else null;
-        })()}
       </View>
     );
   } else {
