@@ -3,6 +3,7 @@ import useMainHeader from "../hooks/useMainHeader";
 
 import CalculatorScreen from "../screens//Supply_Calculator/CalculatorsScreen";
 import ApartmentInput from "../screens/Supply_Calculator/ApartmentInput";
+import ApartmentMeterPanel from "../screens/Supply_Calculator/ApartmentMeterPanel";
 
 export type StackNavigationParams = {
   [name: string]: undefined;
@@ -18,6 +19,10 @@ const CalculatorNavigation = () => {
     >
       <Stack.Screen name="Тооцооны програм" component={CalculatorScreen} />
       <Stack.Screen name="Оролтын тооцоо" component={ApartmentInput} />
+      <Stack.Screen
+        name="Давхрын нэгдсэн самбар"
+        component={ApartmentMeterPanel}
+      />
     </Stack.Navigator>
   );
 };

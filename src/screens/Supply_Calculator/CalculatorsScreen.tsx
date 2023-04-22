@@ -26,6 +26,12 @@ const CalculatorScreen: FC = () => {
       icon: "diversify",
       color: blue,
     },
+    {
+      title: "ДНС-ын тооцоо",
+      navigationName: "Давхрын нэгдсэн самбар",
+      icon: "greenhouse",
+      color: blue,
+    },
   ];
 
   return (

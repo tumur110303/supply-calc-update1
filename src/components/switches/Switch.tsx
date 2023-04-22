@@ -13,10 +13,9 @@ import * as Animatable from "react-native-animatable";
 import {
   blue,
   dark,
-  gray,
   green,
   light,
-  orange,
+  purple,
   red,
   w400,
   w500,
@@ -39,9 +38,9 @@ const FormSwitch: FC<Props> = ({ label, value, innerText, onPress }) => {
           style={{
             width: "45%",
             height: 28,
-            backgroundColor: value ? blue : light,
+            backgroundColor: value ? blue : green,
             marginLeft: 5,
-            borderRadius: 5,
+            borderRadius: 12,
             justifyContent: "center",
           }}
           onPress={() => onPress(false)}
@@ -63,9 +62,9 @@ const FormSwitch: FC<Props> = ({ label, value, innerText, onPress }) => {
           style={{
             width: "45%",
             height: 28,
-            backgroundColor: value ? light : blue,
+            backgroundColor: value ? green : blue,
             marginLeft: 5,
-            borderRadius: 5,
+            borderRadius: 12,
             justifyContent: "center",
           }}
           onPress={() => onPress(true)}
@@ -139,7 +138,7 @@ const css = StyleSheet.create({
     marginLeft: 5,
     paddingVertical: 3,
     paddingRight: 5,
-    borderRadius: 5,
+    borderRadius: 14,
     justifyContent: "space-around",
     alignItems: "center",
   },

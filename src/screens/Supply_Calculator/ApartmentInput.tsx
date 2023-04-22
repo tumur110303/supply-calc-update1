@@ -2,6 +2,8 @@ import { FC, useContext, useEffect, useState } from "react";
 import { StyleSheet, Text, ScrollView, View, Alert } from "react-native";
 
 import CalcContext from "../../context/CalcContext";
+import CountContext from "../../context/CountContext";
+
 import Button from "../../components/Button";
 import Textfield from "../../components/Textfield";
 import FormPicker from "../../components/FormPicker";
@@ -49,6 +51,7 @@ type Error = {
 
 const ApartmentInput: FC = () => {
   const calcContext = useContext(CalcContext);
+  const { increase } = useContext(CountContext);
 
   const [value, setValue] = useState<Value>({
     earthSystem: false,
@@ -113,13 +116,17 @@ const ApartmentInput: FC = () => {
 
   const reset = () => {
     setValue({
+      earthSystem: false,
       floor: false,
       cable: "AC",
     });
     setHave(false);
     setResult(undefined);
+    setResultEmergency(undefined);
+    setResultTotal(undefined);
     setResultFire(undefined);
     setVisible(false);
+    setError({ floor: false });
   };
 
   const valueChanger = (
@@ -404,6 +411,7 @@ const ApartmentInput: FC = () => {
     }
 
     setVisible(true);
+    await increase();
   };
 
   //   Туршилтын функц...
@@ -530,7 +538,7 @@ const ApartmentInput: FC = () => {
                 unit: "А",
               },
               {
-                label: "Нийт бүрэн чадал, кВА",
+                label: "Нийт бүрэн чадал",
                 unit: "кВА",
               },
               {
@@ -589,7 +597,7 @@ const ApartmentInput: FC = () => {
                 unit: "А",
               },
               {
-                label: "Хэвийн үеийн бүрэн чадал, кВА",
+                label: "Хэвийн үеийн бүрэн чадал",
                 unit: "кВА",
               },
               {
@@ -654,7 +662,7 @@ const ApartmentInput: FC = () => {
                 unit: "А",
               },
               {
-                label: "Нэг шугам тасарсан үеийн шугамын бүрэн чадал, кВА",
+                label: "Нэг шугам тасарсан үеийн шугамын бүрэн чадал",
                 unit: "кВА",
               },
               {
@@ -715,12 +723,16 @@ const ApartmentInput: FC = () => {
                 unit: "A",
               },
               {
+                label: "Бүрэн чадал",
+                unit: "кВА",
+              },
+              {
                 label: "Автомат таслуурын гүйдэл",
                 unit: "A",
               },
               {
                 label: "Галд тэсвэртэй зэс кабель",
-                unit: null,
+                unit: "мм.кв",
               },
             ];
             return value.firePump ? (
@@ -879,7 +891,7 @@ const ApartmentInput: FC = () => {
                 unit: "А",
               },
               {
-                label: "Бүрэн чадал, кВА",
+                label: "Бүрэн чадал",
                 unit: "кВА",
               },
               {
@@ -946,12 +958,16 @@ const ApartmentInput: FC = () => {
                 unit: "A",
               },
               {
+                label: "Бүрэн чадал",
+                unit: "кВА",
+              },
+              {
                 label: "Автомат таслуурын гүйдэл",
                 unit: "A",
               },
               {
                 label: "Галд тэсвэртэй зэс кабель",
-                unit: null,
+                unit: "мм.кв",
               },
             ];
             return value.firePump ? (
@@ -996,7 +1012,6 @@ const ApartmentInput: FC = () => {
         </Modal>
       )}
       <Text style={css.title}>Ерөнхий өгөгдөл</Text>
-
       <FormPicker
         label="Барилгын давхрын тоо"
         icon="office-building"
