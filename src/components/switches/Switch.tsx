@@ -15,6 +15,7 @@ import {
   dark,
   green,
   light,
+  lightGreen,
   purple,
   red,
   w400,
@@ -38,7 +39,7 @@ const FormSwitch: FC<Props> = ({ label, value, innerText, onPress }) => {
           style={{
             width: "45%",
             height: 28,
-            backgroundColor: value ? blue : green,
+            backgroundColor: value ? blue : lightGreen,
             marginLeft: 5,
             borderRadius: 12,
             justifyContent: "center",
@@ -62,7 +63,7 @@ const FormSwitch: FC<Props> = ({ label, value, innerText, onPress }) => {
           style={{
             width: "45%",
             height: 28,
-            backgroundColor: value ? green : blue,
+            backgroundColor: value ? lightGreen : blue,
             marginLeft: 5,
             borderRadius: 12,
             justifyContent: "center",
@@ -132,7 +133,7 @@ const css = StyleSheet.create({
   switchContainer: {
     flex: 1,
     flexDirection: "row",
-    width: "50%",
+    width: "30%",
     height: 37,
     backgroundColor: blue,
     marginLeft: 5,

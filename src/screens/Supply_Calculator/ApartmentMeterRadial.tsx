@@ -26,7 +26,7 @@ type Error = {
   cable?: boolean;
 };
 
-const ApartmentInput: FC = () => {
+const ApartmentMeterRadial: FC = () => {
   const calcContext = useContext(CalcContext);
   const { increase } = useContext(CountContext);
 
@@ -268,19 +268,7 @@ const ApartmentInput: FC = () => {
               width: "90%",
               flexWrap: "wrap",
             }}
-          >
-            <Text
-              style={{
-                fontFamily: w400,
-                color: main,
-                marginRight: 5,
-                flexWrap: "wrap",
-              }}
-            >
-              ЦХНА-ны зэрэглэл :{" "}
-            </Text>
-            <Text style={{ fontFamily: w400, flexWrap: "wrap" }}>III</Text>
-          </Text>
+          ></Text>
         </View>
         {(() => {
           const data = [
@@ -398,13 +386,13 @@ const ApartmentInput: FC = () => {
       <Text style={css.title}>Ерөнхий өгөгдөл</Text>
       <Textfield
         label="Сууцны тоог оруулна уу"
-        placeholder="30-аас бага тоо оруулна уу"
+        placeholder="8-аас бага тоо оруулна уу"
         icon="home-city"
         keyboardType="numeric"
         value={value.people ? value.people + "" : ""}
-        onChangeText={(value) => valueChanger(value, "people", [1, 30])}
+        onChangeText={(value) => valueChanger(value, "people", [1, 8])}
         error={{
-          text: "Та 1-30 хүртэлх бүхэл тоо оруулна уу",
+          text: "Та 1-8 хүртэлх бүхэл тоо оруулна уу",
           show: error.people,
         }}
       />
@@ -481,7 +469,7 @@ const ApartmentInput: FC = () => {
   );
 };
 
-export default ApartmentInput;
+export default ApartmentMeterRadial;
 
 const css = StyleSheet.create({
   container: {

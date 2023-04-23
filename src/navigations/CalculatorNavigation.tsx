@@ -3,7 +3,8 @@ import useMainHeader from "../hooks/useMainHeader";
 
 import CalculatorScreen from "../screens//Supply_Calculator/CalculatorsScreen";
 import ApartmentInput from "../screens/Supply_Calculator/ApartmentInput";
-import ApartmentMeterPanel from "../screens/Supply_Calculator/ApartmentMeterPanel";
+import ApartmentMeterRadial from "../screens/Supply_Calculator/ApartmentMeterRadial";
+import ApartmentMeterMagistral from "../screens/Supply_Calculator/ApartmentMeterMagistral";
 
 export type StackNavigationParams = {
   [name: string]: undefined;
@@ -20,8 +21,12 @@ const CalculatorNavigation = () => {
       <Stack.Screen name="Тооцооны програм" component={CalculatorScreen} />
       <Stack.Screen name="Оролтын тооцоо" component={ApartmentInput} />
       <Stack.Screen
-        name="Давхрын нэгдсэн самбар"
-        component={ApartmentMeterPanel}
+        name="ДНС тэжээх радиал шугам"
+        component={ApartmentMeterRadial}
+      />
+      <Stack.Screen
+        name="ДНС тэжээх магистрал шугам"
+        component={ApartmentMeterMagistral}
       />
     </Stack.Navigator>
   );

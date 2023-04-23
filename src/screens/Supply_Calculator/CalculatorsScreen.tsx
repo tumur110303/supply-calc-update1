@@ -27,8 +27,14 @@ const CalculatorScreen: FC = () => {
       color: blue,
     },
     {
-      title: "ДНС-ын тооцоо",
-      navigationName: "Давхрын нэгдсэн самбар",
+      title: "ДНС тэжээх радиал шугам",
+      navigationName: "ДНС тэжээх радиал шугам",
+      icon: "greenhouse",
+      color: green,
+    },
+    {
+      title: "ДНС тэжээх магистрал шугам",
+      navigationName: "ДНС тэжээх магистрал шугам",
       icon: "greenhouse",
       color: blue,
     },
