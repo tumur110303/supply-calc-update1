@@ -51,9 +51,9 @@ const HomeScreen: FC = () => {
     },
     {
       title: "Цахилгаан хэлхээний онол",
-      navigationName: "Цахилгаан хэлхээний онол",
+      navigationName: "ЦХО-ын тооцоо",
       icon: "calculator-variant",
-      subtitle: "Цахилгаан ачаалал тооцох програм",
+      subtitle: "ЦХО-ын тооцооны програм",
     },
     {
       title: "Ерөнхий ойлголт",

@@ -14,12 +14,9 @@ const TheoryCalculatorNavigation = () => {
   return (
     <Stack.Navigator
       screenOptions={(options) => useMainHeader(options)}
-      initialRouteName="Цахилгаан хэлхээний онол"
+      initialRouteName="ЦХО-ын тооцоо"
     >
-      <Stack.Screen
-        name="Цахилгаан хэлхээний онол"
-        component={TheoryCalculatorScreen}
-      />
+      <Stack.Screen name="ЦХО-ын тооцоо" component={TheoryCalculatorScreen} />
       <Stack.Screen name="Резисторын тооцоо" component={ResistorCalculator} />
     </Stack.Navigator>
   );

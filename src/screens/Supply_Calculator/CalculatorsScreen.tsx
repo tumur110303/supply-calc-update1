@@ -7,7 +7,16 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { dark, light, main, w400, blue, green } from "../../constants";
+import {
+  dark,
+  light,
+  main,
+  w400,
+  blue,
+  green,
+  lightGray,
+  red,
+} from "../../constants";
 import { useNavigation } from "@react-navigation/native";
 import NoSubscription from "../OtherScreens/NoSubscription";
 import SubscriptionContext from "../../context/SubscriptionContext";
@@ -103,6 +112,8 @@ export default CalculatorScreen;
 
 const css = StyleSheet.create({
   container: {
+    backgroundColor: lightGray,
+    height: "100%",
     paddingVertical: 10,
     paddingHorizontal: 10,
     flexDirection: "row",

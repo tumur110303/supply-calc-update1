@@ -42,7 +42,7 @@ const MainNavigation = () => {
               component={CalculatorNavigation}
             />
             <Drawer.Screen
-              name="Цахилгаан хэлхээний онол"
+              name="ЦХО-ын тооцоо"
               options={{
                 headerShown: false,
               }}
