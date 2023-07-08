@@ -11,6 +11,8 @@ import { dark, light, main, w400, w500 } from "../../constants";
 import Modal from "../../components/ResultModal";
 import Switch from "../../components/switches/Switch";
 import * as Animatable from "react-native-animatable";
+import SingleTextfield from "../../components/customComponents/SingleTextInput";
+import SingleTextInput from "../../components/customComponents/SingleTextInput";
 
 type Value = {
   earthSystem?: boolean;
@@ -1025,32 +1027,9 @@ const ApartmentInput: FC = () => {
         }}
         value={value.floor}
       />
-      <Textfield
-        label="Сууцны тоог оруулна уу"
-        placeholder="10000-аас бага тоо оруулна уу"
-        icon="home-city"
-        keyboardType="numeric"
-        value={value.people ? value.people + "" : ""}
-        onChangeText={(value) => valueChanger(value, "people", [1, 10000])}
-        error={{
-          text: "Та 1-10000 хүртэлх бүхэл тоо оруулна уу",
-          show: error.people,
-        }}
-      />
-      <Textfield
-        label="Гэрэлтүүлгийн чадлыг оруулна уу"
-        placeholder="100-аас бага тоо оруулна уу"
-        icon="lightbulb-on"
-        keyboardType="numeric"
-        value={value.lighting ? value.lighting + "" : ""}
-        onChangeText={(value) =>
-          valueChangerButarhai(value, "lighting", [0, 100])
-        }
-        error={{
-          text: "Та 0-100кВт хүртэл чадлын утга оруулна уу",
-          show: error.lighting,
-        }}
-      />
+
+      <SingleTextInput label="Сууцны тоо" placeholder="100'000-аас бага утга" />
+
       <FormPicker
         label="Утас, кабель"
         icon="google-circles-communities"

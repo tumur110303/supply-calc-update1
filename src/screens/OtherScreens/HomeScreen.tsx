@@ -35,7 +35,13 @@ const HomeScreen: FC = () => {
 
   const contents: ContentType[] = [
     {
-      title: "Тооцоолох",
+      title: "Цахилгаан хангамж",
+      navigationName: "Тооцоолол",
+      icon: "calculator-variant",
+      subtitle: "Цахилгаан ачаалал тооцох програм",
+    },
+    {
+      title: "Цахилгаан хэлхээний онол",
       navigationName: "Тооцоолол",
       icon: "calculator-variant",
       subtitle: "Цахилгаан ачаалал тооцох програм",
@@ -108,37 +114,6 @@ const HomeScreen: FC = () => {
           </TouchableOpacity>
         )}
       />
-      <TouchableOpacity
-        activeOpacity={0.6}
-        style={{
-          backgroundColor: "#3b5998",
-          flexDirection: "row",
-          justifyContent: "center",
-          padding: 10,
-          borderRadius: 5,
-        }}
-        onPress={async () => {
-          const status = await Linking.canOpenURL("fb://page/112382101496580");
-          if (status) {
-            Linking.openURL("fb://page/112382101496580");
-          } else {
-            Linking.openURL("https://www.facebook.com/112382101496580");
-          }
-        }}
-      >
-        <MaterialCommunityIcons name="facebook" size={20} color={light} />
-        <Text
-          style={{
-            textTransform: "uppercase",
-            color: "#fff",
-            fontFamily: w500,
-            paddingTop: 3,
-            paddingLeft: 3,
-          }}
-        >
-          Facebook-ээр холбоо барих
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 };

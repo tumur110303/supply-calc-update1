@@ -3,7 +3,7 @@ import { Text, TouchableOpacity, StyleSheet, View } from "react-native";
 import { RouteProp } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
-import { dark, light, w500 } from "../constants";
+import { dark, light, w500, lightGray } from "../constants";
 
 type MainHeaderType = (route: {
   route: RouteProp<any, keyof any>;
@@ -13,7 +13,7 @@ type MainHeaderType = (route: {
 const useMainHeader: MainHeaderType = (options) => {
   return {
     sceneContainerStyle: {
-      backgroundColor: "#f6f6f6",
+      backgroundColor: lightGray,
     },
     headerStyle: {
       backgroundColor: dark,

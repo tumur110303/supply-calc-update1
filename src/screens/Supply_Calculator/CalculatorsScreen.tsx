@@ -7,8 +7,11 @@ import {
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { dark, light, main, w400, blue, green, w500 } from "../../constants";
+import { dark, light, main, w400, blue, green } from "../../constants";
 import { useNavigation } from "@react-navigation/native";
+import NoSubscription from "../OtherScreens/NoSubscription";
+import SubscriptionContext from "../../context/SubscriptionContext";
+import CountContext from "../../context/CountContext";
 
 type ContentType = {
   title: string;
@@ -18,6 +21,8 @@ type ContentType = {
 };
 
 const CalculatorScreen: FC = () => {
+  const subscription = useContext(SubscriptionContext);
+  const { count } = useContext(CountContext);
   const navigation = useNavigation();
   const contents: ContentType[] = [
     {
@@ -42,7 +47,6 @@ const CalculatorScreen: FC = () => {
 
   return (
     <View style={css.container}>
-      <Text style={css.bigTitle}>Орон сууцны барилгын тооцоо</Text>
       <FlatList
         keyExtractor={(item) => item.navigationName}
         data={contents}
@@ -50,7 +54,7 @@ const CalculatorScreen: FC = () => {
           <TouchableOpacity
             activeOpacity={0.6}
             style={css.item}
-            onPress={() => navigation.navigate(item.navigationName as never)}
+            onPress={() => navigation.navigate(item.navigationName as any)}
           >
             <MaterialCommunityIcons
               name={item.icon}
@@ -75,6 +79,22 @@ const CalculatorScreen: FC = () => {
           </TouchableOpacity>
         )}
       />
+      {(() => {
+        if (!subscription && count > 4) {
+          return (
+            <View style={css.overlayWrapper}>
+              <TouchableOpacity
+                style={css.overlay}
+                activeOpacity={1}
+                onPress={() => navigation.goBack()}
+              />
+              <View style={css.overlayContainer}>
+                <NoSubscription />
+              </View>
+            </View>
+          );
+        } else null;
+      })()}
     </View>
   );
 };
@@ -85,13 +105,7 @@ const css = StyleSheet.create({
   container: {
     paddingVertical: 10,
     paddingHorizontal: 10,
-  },
-  bigTitle: {
-    marginVertical: 10,
-    alignSelf: "center",
-    color: dark,
-    textTransform: "uppercase",
-    fontFamily: w500,
+    flexDirection: "row",
   },
   line: {
     height: "100%",
@@ -104,10 +118,11 @@ const css = StyleSheet.create({
     alignItems: "center",
     position: "relative",
     backgroundColor: light,
-    paddingVertical: 10,
+    paddingVertical: 20,
     paddingHorizontal: 15,
-    borderBottomColor: blue,
-    borderBottomWidth: 1,
+    marginVertical: 10,
+
+    borderRadius: 5,
   },
   title: {
     fontFamily: w400,
