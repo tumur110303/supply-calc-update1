@@ -54,7 +54,7 @@ const CalculatorScreen: FC = () => {
           <TouchableOpacity
             activeOpacity={0.6}
             style={css.item}
-            onPress={() => navigation.navigate(item.navigationName as any)}
+            onPress={() => navigation.navigate(item.navigationName as never)}
           >
             <MaterialCommunityIcons
               name={item.icon}

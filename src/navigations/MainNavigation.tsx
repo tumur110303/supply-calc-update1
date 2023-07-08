@@ -8,6 +8,7 @@ import HomeScreen from "../screens/OtherScreens/HomeScreen";
 import LoginScreen from "../screens/OtherScreens/LoginScreen";
 import Logout from "../screens/OtherScreens/Logout";
 import RegisterScreen from "../screens/OtherScreens/RegisterScreen";
+import TheoryCalculatorNavigation from "./TheoryCalculatorNavigation";
 import CalculatorNavigation from "./CalculatorNavigation";
 import BlogNavigation from "./BlogNavigation";
 import TestNavigation from "./TestNavigation";
@@ -39,6 +40,13 @@ const MainNavigation = () => {
                 headerShown: false,
               }}
               component={CalculatorNavigation}
+            />
+            <Drawer.Screen
+              name="Цахилгаан хэлхээний онол"
+              options={{
+                headerShown: false,
+              }}
+              component={TheoryCalculatorNavigation}
             />
             <Drawer.Screen
               name="Нийтлэл"

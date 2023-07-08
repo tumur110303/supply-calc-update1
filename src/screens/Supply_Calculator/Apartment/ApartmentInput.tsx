@@ -1,18 +1,18 @@
 import { FC, useContext, useEffect, useState } from "react";
 import { StyleSheet, Text, ScrollView, View, Alert } from "react-native";
 
-import CalcContext from "../../context/CalcContext";
-import CountContext from "../../context/CountContext";
+import CalcContext from "../../../context/CalcContext";
+import CountContext from "../../../context/CountContext";
 
-import Button from "../../components/Button";
-import Textfield from "../../components/Textfield";
-import FormPicker from "../../components/FormPicker";
-import { dark, light, main, w400, w500 } from "../../constants";
-import Modal from "../../components/ResultModal";
-import Switch from "../../components/switches/Switch";
+import Button from "../../../components/Button";
+import Textfield from "../../../components/Textfield";
+import FormPicker from "../../../components/FormPicker";
+import { dark, light, main, w400, w500 } from "../../../constants";
+import Modal from "../../../components/ResultModal";
+import Switch from "../../../components/switches/Switch";
 import * as Animatable from "react-native-animatable";
-import SingleTextfield from "../../components/customComponents/SingleTextInput";
-import SingleTextInput from "../../components/customComponents/SingleTextInput";
+import SingleTextfield from "../../../components/customComponents/SingleTextInput";
+import SingleTextInput from "../../../components/customComponents/SingleTextInput";
 
 type Value = {
   earthSystem?: boolean;

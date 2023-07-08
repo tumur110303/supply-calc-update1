@@ -11,7 +11,16 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-import { dark, gray, light, main, w400, w500 } from "../../constants";
+import {
+  dark,
+  gray,
+  light,
+  lightGray,
+  main,
+  red,
+  w400,
+  w500,
+} from "../../constants";
 import UserContext from "../../context/UserContext";
 import SocketContext from "../../context/SocketContext";
 import CountContext from "../../context/CountContext";
@@ -42,7 +51,7 @@ const HomeScreen: FC = () => {
     },
     {
       title: "Цахилгаан хэлхээний онол",
-      navigationName: "Тооцоолол",
+      navigationName: "Цахилгаан хэлхээний онол",
       icon: "calculator-variant",
       subtitle: "Цахилгаан ачаалал тооцох програм",
     },
@@ -69,7 +78,7 @@ const HomeScreen: FC = () => {
       } else {
         const id = account._id;
         socket?.on(`logout-${id}`, () => {
-          navigation.navigate("Гарах" as any);
+          navigation.navigate("Гарах" as never);
         });
       }
     })();
@@ -99,7 +108,7 @@ const HomeScreen: FC = () => {
           <TouchableOpacity
             activeOpacity={0.6}
             style={css.item}
-            onPress={() => navigation.navigate(item.navigationName as any)}
+            onPress={() => navigation.navigate(item.navigationName as never)}
           >
             <MaterialCommunityIcons
               name={item.icon}
@@ -125,6 +134,7 @@ const css = StyleSheet.create({
     marginVertical: 10,
     marginHorizontal: 10,
     flex: 1,
+    backgroundColor: lightGray,
   },
   item: {
     height: height / 6,

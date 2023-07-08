@@ -2,9 +2,9 @@ import { createStackNavigator } from "@react-navigation/stack";
 import useMainHeader from "../hooks/useMainHeader";
 
 import CalculatorScreen from "../screens//Supply_Calculator/CalculatorsScreen";
-import ApartmentInput from "../screens/Supply_Calculator/ApartmentInput";
-import ApartmentMeterRadial from "../screens/Supply_Calculator/ApartmentMeterRadial";
-import ApartmentMeterMagistral from "../screens/Supply_Calculator/ApartmentMeterMagistral";
+import ApartmentInput from "../screens/Supply_Calculator/Apartment/ApartmentInput";
+import ApartmentMeterRadial from "../screens/Supply_Calculator/Apartment/ApartmentMeterRadial";
+import ApartmentMeterMagistral from "../screens/Supply_Calculator/Apartment/ApartmentMeterMagistral";
 
 export type StackNavigationParams = {
   [name: string]: undefined;
