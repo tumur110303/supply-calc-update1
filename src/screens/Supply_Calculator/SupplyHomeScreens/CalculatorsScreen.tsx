@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  ImageBackground,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
@@ -16,11 +17,11 @@ import {
   green,
   lightGray,
   red,
-} from "../../constants";
+} from "../../../constants";
 import { useNavigation } from "@react-navigation/native";
-import NoSubscription from "../OtherScreens/NoSubscription";
-import SubscriptionContext from "../../context/SubscriptionContext";
-import CountContext from "../../context/CountContext";
+import NoSubscription from "../../OtherScreens/NoSubscription";
+import SubscriptionContext from "../../../context/SubscriptionContext";
+import CountContext from "../../../context/CountContext";
 
 type ContentType = {
   title: string;
@@ -33,6 +34,7 @@ const CalculatorScreen: FC = () => {
   const subscription = useContext(SubscriptionContext);
   const { count } = useContext(CountContext);
   const navigation = useNavigation();
+
   const contents: ContentType[] = [
     {
       title: "Оролтын тооцоо",
@@ -75,6 +77,7 @@ const CalculatorScreen: FC = () => {
                 flexDirection: "row",
                 width: "90%",
                 flexWrap: "wrap",
+                marginLeft: 10,
               }}
             >
               <Text style={css.title}>{item.title}</Text>
@@ -129,9 +132,9 @@ const css = StyleSheet.create({
     alignItems: "center",
     position: "relative",
     backgroundColor: light,
-    paddingVertical: 20,
+    paddingVertical: 15,
     paddingHorizontal: 15,
-    marginVertical: 10,
+    marginVertical: 5,
 
     borderRadius: 5,
   },
