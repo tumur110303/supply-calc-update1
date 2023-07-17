@@ -2,9 +2,10 @@ import { createStackNavigator } from "@react-navigation/stack";
 import useMainHeader from "../hooks/useMainHeader";
 
 import CalculatorScreen from "../screens/Supply_Calculator/SupplyHomeScreens/CalculatorsScreen";
-import ApartmentInput from "../screens/Supply_Calculator/Apartment/ApartmentInput";
-import ApartmentMeterRadial from "../screens/Supply_Calculator/Apartment/ApartmentMeterRadial";
-import ApartmentMeterMagistral from "../screens/Supply_Calculator/Apartment/ApartmentMeterMagistral";
+import ApartmentCalculatorScreen from "../screens/Supply_Calculator/SupplyHomeScreens/ApartmentCalculatorScreen";
+import CivilCalculatorScreen from "../screens/Supply_Calculator/SupplyHomeScreens/CivilCalculatorScreen";
+import OtherCalculatorScreen from "../screens/Supply_Calculator/SupplyHomeScreens/OtherCalculatorScreen";
+import LightingCalculatorScreen from "../screens/Supply_Calculator/SupplyHomeScreens/LightingCalculatorScreen";
 
 export type StackNavigationParams = {
   [name: string]: undefined;
@@ -19,14 +20,15 @@ const CalculatorNavigation = () => {
       initialRouteName="Тооцооны програм"
     >
       <Stack.Screen name="Тооцооны програм" component={CalculatorScreen} />
-      <Stack.Screen name="Оролтын тооцоо" component={ApartmentInput} />
+      <Stack.Screen name="Орон сууц" component={ApartmentCalculatorScreen} />
       <Stack.Screen
-        name="ДНС тэжээх радиал шугам"
-        component={ApartmentMeterRadial}
+        name="Олон нийтийн барилга"
+        component={CivilCalculatorScreen}
       />
+      <Stack.Screen name="Түгээмэл тооцоо" component={OtherCalculatorScreen} />
       <Stack.Screen
-        name="ДНС тэжээх магистрал шугам"
-        component={ApartmentMeterMagistral}
+        name="Гэрэлтүүлгийн тооцоо"
+        component={LightingCalculatorScreen}
       />
     </Stack.Navigator>
   );

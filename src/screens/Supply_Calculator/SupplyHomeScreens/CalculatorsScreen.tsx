@@ -5,7 +5,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ImageBackground,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
@@ -23,74 +22,56 @@ import NoSubscription from "../../OtherScreens/NoSubscription";
 import SubscriptionContext from "../../../context/SubscriptionContext";
 import CountContext from "../../../context/CountContext";
 
-type ContentType = {
-  title: string;
-  navigationName: string;
-  icon: any;
-  color: string;
-};
-
 const CalculatorScreen: FC = () => {
   const subscription = useContext(SubscriptionContext);
   const { count } = useContext(CountContext);
   const navigation = useNavigation();
 
-  const contents: ContentType[] = [
-    {
-      title: "Оролтын тооцоо",
-      navigationName: "Оролтын тооцоо",
-      icon: "diversify",
-      color: blue,
-    },
-    {
-      title: "ДНС тэжээх радиал шугам",
-      navigationName: "ДНС тэжээх радиал шугам",
-      icon: "greenhouse",
-      color: green,
-    },
-    {
-      title: "ДНС тэжээх магистрал шугам",
-      navigationName: "ДНС тэжээх магистрал шугам",
-      icon: "greenhouse",
-      color: blue,
-    },
+  const contents = [
+    [
+      {
+        title: "Орон сууцны тооцоо",
+        navigationName: "Орон сууц",
+        icon: "diversify",
+        color: blue,
+      },
+      {
+        title: "Олон нийтийн барилга",
+        navigationName: "Олон нийтийн барилга",
+        icon: "greenhouse",
+        color: green,
+      },
+    ],
+    [
+      {
+        title: "Түгээмэл ашиглагддаг тооцоо",
+        navigationName: "Түгээмэл тооцоо",
+        icon: "greenhouse",
+        color: blue,
+      },
+      {
+        title: "Гэрэлтүүлгийн тооцоо",
+        navigationName: "Гэрэлтүүлгийн тооцоо",
+        icon: "greenhouse",
+        color: green,
+      },
+    ],
   ];
 
   return (
     <View style={css.container}>
-      <FlatList
-        keyExtractor={(item) => item.navigationName}
-        data={contents}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            activeOpacity={0.6}
-            style={css.item}
-            onPress={() => navigation.navigate(item.navigationName as never)}
-          >
-            <MaterialCommunityIcons
-              name={item.icon}
-              size={26}
-              color={item.color}
-            />
-            <Text
-              style={{
-                flexDirection: "row",
-                width: "90%",
-                flexWrap: "wrap",
-                marginLeft: 10,
-              }}
-            >
-              <Text style={css.title}>{item.title}</Text>
-            </Text>
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={26}
-              color={main}
-              style={css.chevron}
-            />
-          </TouchableOpacity>
-        )}
-      />
+      {contents.map((el, i) => {
+        return (
+          <View style={css.items}>
+            <View style={css.item}>
+              <Text>{el[0].title}</Text>
+            </View>
+            <View style={css.item}>
+              <Text>{el[1].title}</Text>
+            </View>
+          </View>
+        );
+      })}
       {(() => {
         if (!subscription && count > 4) {
           return (
@@ -115,40 +96,17 @@ export default CalculatorScreen;
 
 const css = StyleSheet.create({
   container: {
-    backgroundColor: lightGray,
+    backgroundColor: green,
     height: "100%",
-    paddingVertical: 10,
-    paddingHorizontal: 10,
-    flexDirection: "row",
   },
-  line: {
-    height: "100%",
-    width: 2,
-    backgroundColor: main,
-    marginRight: 10,
-  },
-  item: {
+  items: {
+    height: "30%",
     flexDirection: "row",
+    justifyContent: "space-around",
     alignItems: "center",
-    position: "relative",
-    backgroundColor: light,
-    paddingVertical: 15,
-    paddingHorizontal: 15,
-    marginVertical: 5,
-
-    borderRadius: 5,
+    margin: 5,
   },
-  title: {
-    fontFamily: w400,
-    textTransform: "uppercase",
-    marginLeft: 10,
-    color: dark,
-    marginRight: 10,
-  },
-  chevron: {
-    position: "absolute",
-    right: 10,
-  },
+  item: { width: "48%", height: "100%", backgroundColor: red },
   overlay: {
     position: "absolute",
     right: 0,
