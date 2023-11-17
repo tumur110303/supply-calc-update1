@@ -72,6 +72,7 @@ const CalculatorScreen: FC = () => {
           </View>
         );
       })}
+
       {(() => {
         if (!subscription && count > 4) {
           return (
